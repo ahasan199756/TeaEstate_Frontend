@@ -1,17 +1,21 @@
 import React from 'react';
+import { useCart } from "../components/Cart/CartContext";
 
 const Products = () => {
+  const { addToCart } = useCart();
+
+  // Changed price to numbers for easier math later
   const items = [
-    { id: 1, name: "Organic Green Tea", price: "$24", img: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=80&w=500" },
-    { id: 2, name: "Premium Black Tea", price: "$18", img: "https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=500" },
-    { id: 3, name: "Jasmine Infusion", price: "$22", img: "https://images.unsplash.com/photo-1563911302283-d2bc1dad5b6d?auto=format&fit=crop&q=80&w=500" },
+    { id: 1, name: "Organic Green Tea", price: 24, img: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=80&w=500" },
+    { id: 2, name: "Premium Black Tea", price: 18, img: "https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=500" },
+    { id: 3, name: "Jasmine Infusion", price: 22, img: "https://images.unsplash.com/photo-1563911302283-d2bc1dad5b6d?auto=format&fit=crop&q=80&w=500" },
   ];
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden font-sans">
       
       {/* --- BACKGROUND IMAGE LAYER --- */}
-      <div className="absolute inset-0 z-0"> {/* Changed 'fixed' to 'absolute' */}
+      <div className="absolute inset-0 z-0">
         <img 
           src="/misty-tea-fields-stockcake.webp" 
           alt="Estate Background" 
@@ -55,13 +59,18 @@ const Products = () => {
                 <div className="p-8">
                   <h3 className="text-2xl font-bold text-white mb-2">{item.name}</h3>
                   <div className="flex justify-between items-center">
-                    <p className="text-green-400 font-black text-xl">{item.price}</p>
+                    {/* Render price with $ sign here */}
+                    <p className="text-green-400 font-black text-xl">${item.price}</p>
                     <span className="text-white/40 text-[10px] font-bold tracking-widest uppercase italic">
                       Organic Cert.
                     </span>
                   </div>
                   
-                  <button className="mt-8 w-full py-4 bg-green-500 hover:bg-green-400 text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-lg shadow-green-900/40 transform active:scale-95">
+                  {/* FIXED: Added onClick handler to trigger addToCart */}
+                  <button 
+                    onClick={() => addToCart(item)}
+                    className="mt-8 w-full py-4 bg-green-500 hover:bg-green-400 text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-lg shadow-green-900/40 transform active:scale-95"
+                  >
                     ADD TO CART
                   </button>
                 </div>

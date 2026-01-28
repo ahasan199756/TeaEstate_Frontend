@@ -7,9 +7,11 @@ import About from './pages/about';
 import Contact from './pages/contact';
 import Footer from './components/Footer/footer'; // Bonus: Adds a professional finish
 import Home from './pages/Home';
+import { CartProvider } from './components/Cart/CartContext';
 
 const App = () => {
   return (
+    <CartProvider>
     <Router>
       <div className="bg-white selection:bg-green-500 selection:text-white">
         <Navbar />
@@ -27,6 +29,7 @@ const App = () => {
       </div>
       <Footer/>
     </Router>
+    </CartProvider>
   );
 };
 
