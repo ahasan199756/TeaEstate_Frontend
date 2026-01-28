@@ -1,22 +1,22 @@
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   theme: {
     extend: {
-      colors: {
-        primary: "#d22715",
-        secondary: "#980a07",
-        primaryDark: "#7e1108",
+      animation: {
+        'marquee': 'marquee 30s linear infinite',
+        'slowZoom': 'slowZoom 20s ease-in-out infinite',
       },
-      container: {
-        center:true,
-        padding:{
-            DEFAULT:"1rem",
-            sm:"2rem",
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        slowZoom: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.1)' },
         },
       },
     },
   },
+  plugins: [],
 }

@@ -9,7 +9,7 @@ const About = () => (
       <img 
         src="/misty-tea-fields-stockcake.webp" // Directly from public folder
         alt="Estate Background" 
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover animate-[slowZoom_25s_infinite_alternate]"
       />
       {/* GREEN TRANSPARENT OVERLAY:
           bg-green-900/80 = 80% opacity
@@ -22,18 +22,25 @@ const About = () => (
     <div className="container mx-auto px-6 lg:px-16 grid md:grid-cols-2 gap-16 items-center relative z-10">
       
       {/* Left Column: Floating Image Card */}
-      <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-green-600 rounded-[40px] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-        <img 
-          src="https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=2000" 
-          className="relative rounded-[40px] shadow-2xl border border-white/10" 
-          alt="Farm" 
-        />
-        <div className="absolute -bottom-6 -right-6 bg-green-500 text-white p-10 rounded-3xl hidden md:block shadow-2xl border border-green-400">
-          <p className="text-4xl font-black">25+</p>
-          <p className="text-xs font-bold uppercase tracking-widest">Years of Estate Heritage</p>
-        </div>
-      </div>
+      <div className="relative group max-w-4xl mx-auto">
+  {/* 1. The Glow Effect (Stays behind everything) */}
+  <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-green-600 rounded-[45px] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+
+  {/* 2. The Clip Container (Restricts the Image Zoom) */}
+  <div className="relative overflow-hidden rounded-[40px] shadow-2xl border border-white/10">
+    <img 
+      src="https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=2000" 
+      className="w-full h-full object-cover animate-[slowZoom_25s_infinite_alternate] will-change-transform" 
+      alt="Farm" 
+    />
+  </div>
+
+  {/* 3. The Badge (Floating outside the clip) */}
+  <div className="absolute -bottom-6 -right-6 bg-green-500 text-white p-10 rounded-3xl hidden md:block shadow-2xl border border-green-400 z-10">
+    <p className="text-4xl font-black">25+</p>
+    <p className="text-xs font-bold uppercase tracking-widest">Years of Estate Heritage</p>
+  </div>
+</div>
 
       {/* Right Column: Text Content */}
       <div className="space-y-6 text-white">

@@ -1,31 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoArrowForward } from "react-icons/io5";
 
+const images = [
+  "https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=2000",
+  "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=80&w=2000",
+  "https://images.unsplash.com/photo-1563911191470-85bc9107d93e?auto=format&fit=crop&q=80&w=2000"
+];
+
 const Hero = () => {
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 7000); // Change every 7 seconds
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <section className="relative h-screen w-full flex items-center overflow-hidden">
+    <section className="relative h-screen w-full flex items-center overflow-hidden bg-black">
       {/* --- BACKGROUND LAYER --- */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=2000" 
-          alt="Tea Plantation" 
-          className="w-full h-full object-cover animate-[slowZoom_25s_infinite_alternate]"
-        />
-        {/* Modern Overlay: Darker on the left for text readability, clearer on the right */}
+        {images.map((img, index) => (
+          <img 
+            key={img}
+            src={img} 
+            alt={`Tea Plantation ${index + 1}`} 
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out
+              ${index === currentImage ? "opacity-100" : "opacity-0"}
+              animate-[slowZoom_25s_infinite_alternate]`}
+          />
+        ))}
+        {/* Modern Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
       </div>
 
       {/* --- CONTENT LAYER --- */}
       <div className="container mx-auto px-6 lg:px-16 relative z-10">
         <div className="max-w-4xl">
-          {/* Subheading with tracking */}
           <div className="overflow-hidden mb-4">
              <span className="inline-block text-green-400 font-bold tracking-[0.3em] uppercase text-sm animate-slide-up">
-              EST. 2026 • Premium Organic Tea
+               EST. 2026 • Premium Organic Tea
             </span>
           </div>
 
-          {/* Main Title with Typography Play */}
           <h2 className="text-6xl md:text-9xl font-black text-white leading-[0.85] tracking-tighter mb-8 animate-fade-in-up">
             Pure Taste <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-green-600">
@@ -33,13 +51,11 @@ const Hero = () => {
             </span>
           </h2>
 
-          {/* Description */}
           <p className="text-lg md:text-xl text-white/70 max-w-lg font-light leading-relaxed mb-10 animate-fade-in-up delay-200">
             Discover the harmony of nature in every cup. Our estates practice sustainable 
             farming to bring you the freshest organic leaves straight to your doorstep.
           </p>
 
-          {/* CTA Buttons */}
           <div className="flex flex-wrap gap-5 animate-fade-in-up delay-300">
             <button className="bg-green-500 hover:bg-green-400 text-white px-10 py-5 rounded-full font-bold text-xs tracking-[0.2em] flex items-center gap-3 transition-all duration-300 transform hover:-translate-y-1 shadow-xl shadow-green-900/20 group">
               SHOP COLLECTION 
@@ -61,11 +77,10 @@ const Hero = () => {
         </span>
       </div>
 
-      {/* Adding custom animations in a style tag for ease of use */}
       <style>{`
         @keyframes slowZoom {
-          from { transform: scale(1.1); }
-          to { transform: scale(1.3); }
+          from { transform: scale(1); }
+          to { transform: scale(1.15); }
         }
         @keyframes slide-up {
           from { transform: translateY(100%); }
