@@ -8,6 +8,8 @@ import About from './pages/about';
 import Contact from './pages/contact';
 import Login from './pages/Login';      // 1. IMPORT LOGIN
 import Register from './pages/Register'; // 2. IMPORT REGISTER
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Footer from './components/Footer/footer'; 
 import { CartProvider } from './components/Cart/CartContext';
 
@@ -27,6 +29,8 @@ const App = () => {
             {/* 3. ADD THESE ROUTES */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Routes>
         </div>
         <Footer/>
