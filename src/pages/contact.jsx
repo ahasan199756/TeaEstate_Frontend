@@ -1,7 +1,7 @@
 import React from 'react'
 
 const Contact = () => (
-  <div className="pt-32 pb-20 bg-green-950 min-h-screen flex items-center">
+  <div className="relative min-h-screen bg-gradient-to-b from-green-900 via-green-950 to-black text-white pt-40 pb-20 px-6 lg:px-16 overflow-hidden">
     <div className="container mx-auto px-6 lg:px-16 grid md:grid-cols-2 gap-20">
       <div className="text-white space-y-8">
         <h2 className="text-6xl font-black tracking-tighter">Get in <br/> <span className="text-green-400">Touch.</span></h2>

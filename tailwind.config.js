@@ -1,22 +1,22 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 module.exports = {
   theme: {
     extend: {
       animation: {
-        'marquee': 'marquee 30s linear infinite',
-        'slowZoom': 'slowZoom 20s ease-in-out infinite',
+        'gradient-x': 'gradient-x 8s ease infinite',
       },
       keyframes: {
-        marquee: {
-          '0%': { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-50%)' },
-        },
-        slowZoom: {
-          '0%, 100%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.1)' },
+        'gradient-x': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center',
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center',
+          },
         },
       },
     },
   },
-  plugins: [],
 }
