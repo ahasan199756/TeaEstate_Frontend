@@ -3,9 +3,18 @@ import { createContext, useContext, useState, useEffect } from "react";
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  // Initialize cart from localStorage so items persist on refresh
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("tea_cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
-  // --- LOGIC: Add to Cart (Increments if exists) ---
+  // Sync cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("tea_cart", JSON.stringify(cart));
+  }, [cart]);
+
+  // --- LOGIC: Add to Cart ---
   const addToCart = (product) => {
     setCart((prev) => {
       const isItemInCart = prev.find((item) => item.id === product.id);
@@ -18,7 +27,7 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // --- LOGIC: Decrease Quantity (Prevents going below 1) ---
+  // --- LOGIC: Decrease Quantity ---
   const decreaseQuantity = (id) => {
     setCart((prev) =>
       prev.map((item) =>
@@ -29,16 +38,19 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // --- LOGIC: Remove from Cart ---
+  // --- LOGIC: Remove Item ---
   const removeFromCart = (id) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // --- CALCULATIONS ---
-  // Total number of individual items for the Navbar badge
-  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+  // --- LOGIC: Clear Cart (Call this after successful checkout) ---
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem("tea_cart");
+  };
 
-  // Total price calculation
+  // --- CALCULATIONS ---
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   return (
@@ -48,6 +60,7 @@ export const CartProvider = ({ children }) => {
         addToCart, 
         decreaseQuantity, 
         removeFromCart, 
+        clearCart, // NEW
         totalItems, 
         subtotal 
       }}

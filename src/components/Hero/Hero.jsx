@@ -1,22 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IoArrowForward } from "react-icons/io5";
-import { Link } from 'react-router-dom'; // <--- THIS IS THE MISSING PIECE
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
+  // This state prevents the "Dark Shade" by waiting for the video to be ready
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   return (
-    <section className="relative h-screen w-full flex items-center overflow-hidden bg-black">
+    <section className="relative h-screen w-full flex items-center overflow-hidden bg-[#062016]">
       {/* --- BACKGROUND LAYER --- */}
       <div className="absolute inset-0 z-0">
+        {/* Placeholder image shows immediately to stop the dark freeze */}
+        <img 
+          src="/misty-tea-fields-stockcake.webp" 
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-20' : 'opacity-50'}`}
+          alt="Loading..."
+        />
+
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-          poster="/misty-tea-fields-stockcake.webp" // Corrected path
+          onLoadedData={() => setVideoLoaded(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-50' : 'opacity-0'}`}
         >
-          <source src="/13261930_3840_2160_60fps.mp4" type="video/mp4" /> {/* Corrected path */}
-          Your browser does not support the video tag.
+          <source src="/13261930_3840_2160_60fps.mp4" type="video/mp4" />
         </video>
 
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent"></div>
@@ -44,7 +53,6 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-wrap gap-5 animate-fade-in-up delay-300">
-            {/* LINK WRAPPER */}
             <Link to="/products">
               <button className="bg-emerald-500 hover:bg-emerald-400 text-white px-10 py-5 rounded-full font-bold text-xs tracking-[0.2em] flex items-center gap-3 transition-all duration-300 transform hover:-translate-y-1 shadow-xl shadow-emerald-900/40 group">
                 SHOP COLLECTION 
@@ -60,20 +68,10 @@ const Hero = () => {
       </div>
 
       <style>{`
-        @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-        .animate-slide-up {
-          animation: slide-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 1.2s ease-out both;
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up { animation: slide-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+        .animate-fade-in-up { animation: fadeInUp 1.2s ease-out both; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .delay-200 { animation-delay: 0.2s; }
         .delay-300 { animation-delay: 0.4s; }
       `}</style>

@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { productItems } from './products'; 
 import { useCart } from "../components/Cart/CartContext";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   // --- POPUP STATE ---
   const [notification, setNotification] = useState({ show: false, name: "" });
-  
-  const product = productItems.find(p => String(p.id) === String(id));
+
+  useEffect(() => {
+    // 1. Get products from LocalStorage
+    const savedProducts = localStorage.getItem('teaProducts');
+    if (savedProducts) {
+      const allProducts = JSON.parse(savedProducts);
+      // 2. Find the specific product by ID
+      const foundProduct = allProducts.find(p => String(p.id) === String(id));
+      setProduct(foundProduct);
+    }
+    setLoading(false);
+  }, [id]);
+
+  if (loading) return <div className="min-h-screen bg-[#062016]" />;
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-green-950 flex flex-col items-center justify-center text-white p-6">
-        <h2 className="text-4xl font-black uppercase mb-4">Product Not Found</h2>
-        <Link to="/products" className="text-green-400 underline uppercase tracking-widest text-xs">Return to Collection</Link>
+      <div className="min-h-screen bg-[#062016] flex flex-col items-center justify-center text-white p-6">
+        <h2 className="text-4xl font-black uppercase mb-4 tracking-tighter">Tea Not Found</h2>
+        <p className="text-white/40 mb-8">This variety may have been retired from our estate.</p>
+        <Link to="/products" className="bg-white text-black px-8 py-3 rounded-full font-black uppercase text-[10px] tracking-widest hover:bg-green-500 hover:text-white transition-all">
+          Return to Collection
+        </Link>
       </div>
     );
   }
@@ -25,25 +41,18 @@ const ProductDetail = () => {
   const handleIncrement = () => setQuantity(prev => prev + 1);
   const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  // --- UPDATED ADD TO CART WITH POPUP ---
   const onAddToCart = () => {
     addToCart({ ...product, quantity });
-    
-    // Show popup
     setNotification({ show: true, name: product.name });
-    
-    // Hide after 2 seconds
-    setTimeout(() => {
-      setNotification({ show: false, name: "" });
-    }, 2000);
+    setTimeout(() => setNotification({ show: false, name: "" }), 2000);
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-green-900 via-green-950 to-black text-white pt-40 pb-20 px-6 lg:px-16 overflow-hidden">
       
-      {/* --- POPUP NOTIFICATION --- */}
+      {/* POPUP NOTIFICATION */}
       <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 transform ${notification.show ? 'translate-y-0 opacity-100' : '-translate-y-20 opacity-0'}`}>
-        <div className="bg-white text-black px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border-2 border-green-500">
+        <div className="bg-white/90 backdrop-blur-md text-black px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-green-500/30">
           <div className="bg-green-500 rounded-full p-1 text-white">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -71,8 +80,8 @@ const ProductDetail = () => {
               </div>
               <img 
                 src={product.img} 
-                alt={product.name} 
                 className="w-full h-full md:h-[650px] object-cover transition-transform duration-1000 group-hover:scale-105" 
+                alt={product.name} 
               />
             </div>
           </div>
@@ -107,7 +116,7 @@ const ProductDetail = () => {
 
                 <button 
                   onClick={onAddToCart}
-                  className="flex-1 bg-white text-black py-5 rounded-full font-black uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all duration-300 active:scale-95 shadow-2xl"
+                  className="flex-1 bg-white text-black py-5 rounded-full font-black uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all duration-300 active:scale-95 shadow-2xl shadow-green-500/10"
                 >
                   Add to Cart — ${(product.price * quantity).toFixed(2)}
                 </button>
@@ -115,8 +124,8 @@ const ProductDetail = () => {
 
               <div className="grid grid-cols-2 gap-8 pt-10 border-t border-white/5">
                 <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-green-500 mb-2">Origin</h4>
-                  <p className="text-white font-medium">Misty Mountain Estates</p>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-green-500 mb-2">Category</h4>
+                  <p className="text-white font-medium">{product.category || 'Premium Tea'}</p>
                 </div>
                 <div>
                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-green-500 mb-2">Process</h4>

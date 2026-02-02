@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Instagram, 
   Facebook, 
@@ -34,9 +35,11 @@ const Footer = () => {
               <li><a href="/shop" className="hover:text-white transition-colors">Our Collection</a></li>
               <li><a href="/process" className="hover:text-white transition-colors">The Process</a></li>
               <li><a href="/wholesale" className="hover:text-white transition-colors">Wholesale</a></li>
-              <li><a href="/admin" className="flex items-center gap-2 hover:text-green-400 transition-colors">
-                <ShieldCheck size={14} /> Admin Portal
-              </a></li>
+              <li>
+  <Link to="/admin-login" className="flex items-center gap-2 hover:text-green-400 transition-colors">
+    <ShieldCheck size={14} /> Admin Portal
+  </Link>
+</li>
             </ul>
           </div>
 
