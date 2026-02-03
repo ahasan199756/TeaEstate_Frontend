@@ -1,29 +1,22 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
+import { CartProvider } from './components/Cart/CartContext';
 
-// --- SHOP COMPONENTS ---
+// --- SHOP IMPORTS ---
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/Footer/footer';
 import Home from './pages/Home';
-import Products from './pages/products'; 
+import Products from './pages/products';
 import ProductDetail from './pages/ProductDetail';
-import About from './pages/about';
-import Contact from './pages/contact';
+import CartDrawer from './components/Cart/CartDrawer';
+import Checkout from './components/Cart/Checkout';
+import OrderSuccess from './components/Cart/OrderSuccess'; // Fixed Import
+import OrdersHistory from './components/Cart/OrderHistory'; // Fixed Import (Renamed for clarity)
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Profile from './pages/Profile';
-import OrderHistory from './pages/OrderHistory';
-import OrderDetail from './pages/OrderDetail';
-import Checkout from './components/Cart/Checkout'; // NEW
-import OrderSuccess from './pages/OrderSuccess'; // NEW
-
-// Context
-import { CartProvider } from './components/Cart/CartContext';
-
-// --- ADMIN COMPONENTS ---
 import AdminLogin from './pages/Admin/AdminLogin';
+
+// --- ADMIN IMPORTS ---
 import AdminSidebar from './components/Admin/AdminSidebar';
 import Dashboard from './pages/Admin/Dashboard';
 import ManageProducts from './pages/Admin/ManageProducts';
@@ -33,51 +26,46 @@ import Analytics from './pages/Admin/Analytics';
 import Orders from './pages/Admin/Orders';
 import Customers from './pages/Admin/Customers';
 import Transactions from './pages/Admin/Transactions';
-import Settings from './pages/Admin/Settings';
+import Settings, { 
+  GeneralSettingsForm, 
+  ShippingSettingsForm, 
+  PaymentSettingsForm, 
+  SecuritySettingsForm 
+} from './pages/Admin/Settings';
 
-// 1. Scroll to top logic
+// --- UTILITIES ---
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 };
 
-// 2. Security Guards
 const ProtectedAdmin = () => {
   const isAuth = localStorage.getItem('adminAuthenticated') === 'true';
   return isAuth ? <Outlet /> : <Navigate to="/admin-login" replace />;
 };
 
-const ProtectedCustomer = () => {
-  const isAuth = localStorage.getItem('currentUser') !== null;
-  return isAuth ? <Outlet /> : <Navigate to="/login" replace />;
-};
-
-// 3. Layout logic
-const ShopLayout = () => {
-  const location = useLocation();
-  // Added order-success and checkout to authPaths if you want a focused UI
-  const authPaths = ['/login', '/register', '/admin-login', '/forgot-password', '/order-success'];
-  const isAuthPage = authPaths.includes(location.pathname);
-
-  return (
-    <div className="bg-[#062016] selection:bg-emerald-500 selection:text-white min-h-screen flex flex-col text-white">
-      {!isAuthPage && <Navbar />}
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-      {!isAuthPage && <Footer />}
-    </div>
-  );
-};
+// --- LAYOUTS ---
+const ShopLayout = () => (
+  <>
+    <Navbar />
+    <CartDrawer />
+    <main>
+      <Outlet />
+    </main>
+    <Footer />
+  </>
+);
 
 const AdminLayout = () => (
-  <div className="flex min-h-screen bg-[#062016] selection:bg-emerald-500 selection:text-white">
+  <div className="flex min-h-screen w-full bg-[#04160f] relative overflow-hidden">
+    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-emerald-800/10 rounded-full blur-[100px] pointer-events-none"></div>
     <AdminSidebar />
-    <main className="flex-grow p-10 overflow-y-auto max-h-screen">
-      <Outlet />
+    <main className="flex-grow p-10 relative z-10">
+      <div className="max-w-7xl mx-auto">
+        <Outlet />
+      </div>
     </main>
   </div>
 );
@@ -88,30 +76,23 @@ const App = () => {
       <Router>
         <ScrollToTop />
         <Routes>
-          {/* --- PUBLIC & CUSTOMER SHOP ROUTES --- */}
-          <Route path="/" element={<ShopLayout />}>
-            <Route index element={<Home />} />
-            <Route path="products" element={<Products />} />
-            <Route path="product/:id" element={<ProductDetail />} />
-            <Route path="about" element={<About />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route path="reset-password/:token" element={<ResetPassword />} />
-            <Route path="admin-login" element={<AdminLogin />} />
-            <Route path="checkout" element={<Checkout />} /> {/* NEW */}
-            <Route path="order-success" element={<OrderSuccess />} /> {/* NEW */}
-
-            {/* PROTECTED CUSTOMER ROUTES */}
-            <Route element={<ProtectedCustomer />}>
-              <Route path="profile" element={<Profile />} />
-              <Route path="orders" element={<OrderHistory />} />
-              <Route path="orders/:id" element={<OrderDetail />} />
-            </Route>
+          
+          {/* 1. PUBLIC SHOP ROUTES */}
+          <Route element={<ShopLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
+            <Route path="/orders" element={<OrdersHistory />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Route>
 
-          {/* --- PROTECTED ADMIN ROUTES --- */}
+          {/* 2. ADMIN LOGIN */}
+          <Route path="/admin-login" element={<AdminLogin />} />
+
+          {/* 3. PROTECTED ADMIN ROUTES */}
           <Route element={<ProtectedAdmin />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
@@ -122,10 +103,18 @@ const App = () => {
               <Route path="orders" element={<Orders />} />
               <Route path="customers" element={<Customers />} />
               <Route path="transactions" element={<Transactions />} />
-              <Route path="settings" element={<Settings />} />
+              
+              <Route path="settings" element={<Settings />}>
+                <Route index element={<Navigate to="general" replace />} />
+                <Route path="general" element={<GeneralSettingsForm />} />
+                <Route path="shipping" element={<ShippingSettingsForm />} />
+                <Route path="payments" element={<PaymentSettingsForm />} />
+                <Route path="security" element={<SecuritySettingsForm />} />
+              </Route>
             </Route>
           </Route>
 
+          {/* 4. FALLBACK */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

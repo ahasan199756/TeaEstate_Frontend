@@ -16,3 +16,55 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #04160f; /* Match your sidebar/admin color */
+}
+/* Custom Slim Scrollbar for Sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px; /* Very thin */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.2); /* Faint emerald */
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.5); /* Brighter on hover */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+/* Add these for the Glass effect */
+.glass-sidebar {
+  background: rgba(4, 22, 15, 0.8); /* Semi-transparent dark green */
+  backdrop-filter: blur(12px); /* The "Frosted Glass" effect */
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05); /* Subtle edge */
+}
+
+/* Eye-catchy scrollbar for glass */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+}

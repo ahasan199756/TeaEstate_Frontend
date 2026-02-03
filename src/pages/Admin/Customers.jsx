@@ -142,89 +142,109 @@ const Customers = () => {
         ))}
       </div>
 
-      {/* --- CUSTOMER DETAIL MODAL (THE CRM VIEW) --- */}
-      {isDetailOpen && selectedCustomer && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-5xl rounded-[40px] max-h-[90vh] overflow-y-auto relative animate-in slide-in-from-bottom-10">
-            <button onClick={closeModal} className="absolute top-8 right-8 text-white/20 hover:text-white z-10"><X size={32}/></button>
-            
-            <div className="p-12">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                
-                {/* Profile Summary */}
-                <div className="space-y-8">
-                  <div className="w-24 h-24 bg-emerald-500 rounded-3xl flex items-center justify-center text-black">
-                    <User size={48} strokeWidth={3} />
-                  </div>
-                  <div>
-                    <h2 className="text-4xl font-black text-white uppercase tracking-tighter">{selectedCustomer.name}</h2>
-                    <p className="text-emerald-500 font-black text-xs uppercase tracking-[0.3em] mt-2">Verified Customer</p>
-                  </div>
-
-                  <div className="space-y-4 pt-6 border-t border-white/10">
-                    <div className="flex items-center gap-4 text-white/60 text-sm">
-                      <Mail className="text-emerald-500" size={18} /> {selectedCustomer.email}
-                    </div>
-                    <div className="flex items-center gap-4 text-white/60 text-sm">
-                      <Phone className="text-emerald-500" size={18} /> {selectedCustomer.phone}
-                    </div>
-                    <div className="flex items-start gap-4 text-white/60 text-sm leading-relaxed">
-                      <MapPin className="text-emerald-500 shrink-0" size={18} /> {selectedCustomer.address}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stats & Orders */}
-                <div className="lg:col-span-2 space-y-8">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
-                      <ShoppingBag className="text-emerald-500 mb-4" size={20} />
-                      <p className="text-2xl font-black text-white">{customerOrders.length}</p>
-                      <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Total Orders</p>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
-                      <DollarSign className="text-emerald-500 mb-4" size={20} />
-                      <p className="text-2xl font-black text-white">
-                        ${customerOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}
-                      </p>
-                      <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Revenue</p>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
-                      <Clock className="text-emerald-500 mb-4" size={20} />
-                      <p className="text-2xl font-black text-white">Active</p>
-                      <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Status</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-black text-white uppercase tracking-widest">Order History</h4>
-                    <div className="space-y-2">
-                      {customerOrders.length > 0 ? customerOrders.map(order => (
-                        <div key={order.id} className="bg-white/5 border border-white/5 p-4 rounded-2xl flex justify-between items-center group hover:border-emerald-500/50 transition-colors">
-                          <div>
-                            <p className="text-xs font-mono font-bold text-white/80">{order.id}</p>
-                            <p className="text-[10px] text-white/40 uppercase font-black">{order.date}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-black text-white">${order.total.toFixed(2)}</p>
-                            <span className="text-[9px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">{order.status}</span>
-                          </div>
-                        </div>
-                      )) : (
-                        <div className="text-center py-10 border-2 border-dashed border-white/5 rounded-3xl text-white/20 uppercase text-xs font-black tracking-widest">
-                          No transaction history found
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
+      {/* --- CUSTOMER DETAIL SLIDE-OVER --- */}
+{isDetailOpen && selectedCustomer && (
+  <div className="fixed inset-0 z-[100] flex justify-end">
+    {/* Backdrop - Clicks here close the panel */}
+    <div 
+      className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+      onClick={closeModal}
+    />
+    
+    {/* Panel */}
+    <div className="relative w-full max-w-2xl bg-[#0a0a0a] border-l border-white/10 h-screen shadow-2xl animate-in slide-in-from-right duration-500 overflow-y-auto custom-scrollbar">
+      
+      {/* Close Button */}
+      <button 
+        onClick={closeModal} 
+        className="absolute top-8 right-8 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all z-10"
+      >
+        <X size={24}/>
+      </button>
+      
+      <div className="p-8 lg:p-12 space-y-10">
+        {/* Header Profile */}
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 bg-emerald-500 rounded-[28px] flex items-center justify-center text-black shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+            <User size={40} strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
+              {selectedCustomer.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-2">
+               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+               <p className="text-emerald-500 font-bold text-[10px] uppercase tracking-widest">Customer Insight</p>
             </div>
           </div>
         </div>
-      )}
 
+        {/* Quick Contact Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Email Address</p>
+             <p className="text-white text-sm font-medium">{selectedCustomer.email}</p>
+          </div>
+          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Phone Number</p>
+             <p className="text-white text-sm font-medium">{selectedCustomer.phone}</p>
+          </div>
+        </div>
+
+        {/* Revenue Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-3xl text-center">
+            <ShoppingBag className="text-emerald-500 mx-auto mb-2" size={18} />
+            <p className="text-xl font-black text-white">{customerOrders.length}</p>
+            <p className="text-[8px] font-bold text-emerald-500/50 uppercase">Orders</p>
+          </div>
+          <div className="bg-white/5 border border-white/10 p-5 rounded-3xl text-center">
+            <DollarSign className="text-emerald-400 mx-auto mb-2" size={18} />
+            <p className="text-xl font-black text-white">
+              ${customerOrders.reduce((sum, order) => sum + (order.total || 0), 0).toFixed(2)}
+            </p>
+            <p className="text-[8px] font-bold text-white/20 uppercase">Spent</p>
+          </div>
+          <div className="bg-white/5 border border-white/10 p-5 rounded-3xl text-center">
+            <Clock className="text-blue-400 mx-auto mb-2" size={18} />
+            <p className="text-xl font-black text-white">Active</p>
+            <p className="text-[8px] font-bold text-white/20 uppercase">Status</p>
+          </div>
+        </div>
+
+        {/* Transaction Timeline */}
+        <div className="space-y-4">
+          <h4 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+            Recent Activity <div className="h-[1px] flex-grow bg-white/10" />
+          </h4>
+          <div className="space-y-3">
+            {customerOrders.length > 0 ? customerOrders.map(order => (
+              <div key={order.id} className="group bg-white/[0.02] hover:bg-white/5 border border-white/5 p-4 rounded-2xl flex justify-between items-center transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-emerald-500 transition-colors">
+                    <ShoppingBag size={16} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white uppercase tracking-tight">Order #{order.id.toString().slice(-6)}</p>
+                    <p className="text-[10px] text-white/30 font-medium">{order.date}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-black text-emerald-400">${order.total?.toFixed(2)}</p>
+                  <span className="text-[8px] font-bold uppercase text-white/40">{order.status}</span>
+                </div>
+              </div>
+            )) : (
+              <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-[30px]">
+                <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.3em]">History Empty</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       {/* ADD/EDIT MODAL (Same as before) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
