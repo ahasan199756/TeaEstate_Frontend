@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Upload, Save, X, Link as LinkIcon, Image as ImageIcon, 
-  FileText, Download, AlertCircle, Banknote, Percent 
+  FileText, Download, AlertCircle, Banknote, Percent, Star 
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -23,7 +23,8 @@ const AddProduct = () => {
     discountType: 'flat',
     vat: '5',
     description: '',
-    img: ''
+    img: '',
+    isFeatured: false // NEW: Featured property
   });
 
   useEffect(() => {
@@ -34,8 +35,8 @@ const AddProduct = () => {
 
   // --- LOGIC: DOWNLOAD TEMPLATE ---
   const downloadTemplate = () => {
-    const headers = "Name,Category,BasePrice,DiscountPrice,DiscountType,VAT,Description,ImageURL\n";
-    const sampleData = "Premium Matcha,Green Tea,1200,10,percent,5,High quality matcha powder,https://example.com/tea.jpg";
+    const headers = "Name,Category,BasePrice,DiscountPrice,DiscountType,VAT,Description,ImageURL,IsFeatured\n";
+    const sampleData = "Premium Matcha,Green Tea,1200,10,percent,5,High quality matcha powder,https://example.com/tea.jpg,true";
     const blob = new Blob([headers + sampleData], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -54,10 +55,9 @@ const AddProduct = () => {
       try {
         const text = event.target.result;
         const rows = text.split('\n').filter(row => row.trim() !== '');
-        const dataRows = rows.slice(1); // Remove header
+        const dataRows = rows.slice(1); 
 
         const newProducts = dataRows.map(row => {
-          // Handle comma separation (basic parser)
           const cols = row.split(',').map(c => c.trim());
           return {
             id: Date.now() + Math.random(),
@@ -69,6 +69,7 @@ const AddProduct = () => {
             vat: Number(cols[5]) || 5,
             description: cols[6] || '',
             img: cols[7] || '',
+            isFeatured: cols[8]?.toLowerCase() === 'true', // NEW: Parse featured from CSV
             updatedAt: new Date().toISOString()
           };
         });
@@ -84,7 +85,6 @@ const AddProduct = () => {
     reader.readAsText(file);
   };
 
-  // --- LOGIC: PRICE CALCULATIONS ---
   const getDiscountValue = () => {
     const base = Number(formData.basePrice) || 0;
     const disc = Number(formData.discountPrice) || 0;
@@ -129,68 +129,31 @@ const AddProduct = () => {
           </div>
         </div>
 
-        {/* MODE SWITCHER */}
         <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
-          <button 
-            onClick={() => setIsBulkMode(false)}
-            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isBulkMode ? 'bg-emerald-500 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
-          >
-            Single Entry
-          </button>
-          <button 
-            onClick={() => setIsBulkMode(true)}
-            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isBulkMode ? 'bg-emerald-500 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
-          >
-            Bulk Import
-          </button>
+          <button onClick={() => setIsBulkMode(false)} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isBulkMode ? 'bg-emerald-500 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}>Single Entry</button>
+          <button onClick={() => setIsBulkMode(true)} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isBulkMode ? 'bg-emerald-500 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}>Bulk Import</button>
         </div>
       </div>
 
       {isBulkMode ? (
-        /* --- BULK IMPORT VIEW --- */
         <div className="grid grid-cols-1 gap-8 animate-in zoom-in-95 duration-500">
-          <div className="bg-[#0a0a0a] border-2 border-dashed border-emerald-500/20 rounded-[40px] p-16 flex flex-col items-center text-center group hover:border-emerald-500/50 transition-all">
+           {/* ... BULK IMPORT CONTENT (Remains similar, IsFeatured added to logic above) ... */}
+           <div className="bg-[#0a0a0a] border-2 border-dashed border-emerald-500/20 rounded-[40px] p-16 flex flex-col items-center text-center group hover:border-emerald-500/50 transition-all">
             <div className="w-24 h-24 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-500 mb-8 group-hover:scale-110 transition-transform shadow-[0_0_50px_rgba(16,185,129,0.1)]">
               <FileText size={48} />
             </div>
             <h2 className="text-2xl font-black text-white uppercase mb-2">CSV Upload</h2>
-            <p className="text-white/40 text-sm max-w-md mb-8">
-              Update your global inventory in seconds. Ensure your CSV columns match our system architecture.
-            </p>
-            
+            <p className="text-white/40 text-sm max-w-md mb-8">Update global inventory. Use 'true/false' for the IsFeatured column.</p>
             <div className="flex flex-wrap justify-center gap-4">
-              <button 
-                onClick={() => bulkFileRef.current.click()}
-                className="px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20"
-              >
-                Choose CSV File
-              </button>
-              <button 
-                onClick={downloadTemplate}
-                className="px-10 py-4 bg-white/5 text-white/60 border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
-              >
-                <Download size={16} /> Get Template
-              </button>
+              <button onClick={() => bulkFileRef.current.click()} className="px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20">Choose CSV File</button>
+              <button onClick={downloadTemplate} className="px-10 py-4 bg-white/5 text-white/60 border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"><Download size={16} /> Get Template</button>
             </div>
             <input type="file" ref={bulkFileRef} className="hidden" accept=".csv" onChange={handleBulkImport} />
           </div>
-
-          <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-[30px] p-8 flex items-start gap-6">
-            <AlertCircle className="text-emerald-500 shrink-0" size={24} />
-            <div className="space-y-2">
-              <h4 className="text-white font-bold text-sm uppercase">Import Logic Rules:</h4>
-              <ul className="text-white/40 text-[11px] space-y-1 list-disc ml-4 font-medium uppercase tracking-wider">
-                <li>Prices must be numeric (no currency symbols)</li>
-                <li>Image URLs are preferred over local uploads for bulk</li>
-                <li>Categories must exist in your system to filter properly</li>
-              </ul>
-            </div>
-          </div>
         </div>
       ) : (
-        /* --- SINGLE ENTRY VIEW (Original Form) --- */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* IMAGE & SUMMARY */}
+          {/* LEFT COLUMN: IMAGE & FEATURE TOGGLE */}
           <div className="lg:col-span-4 space-y-6">
             <div className="relative group aspect-[4/5] bg-[#0a0a0a] border-2 border-dashed border-white/5 rounded-[40px] flex flex-col items-center justify-center transition-all overflow-hidden shadow-2xl">
               {formData.img ? (
@@ -214,13 +177,32 @@ const AddProduct = () => {
                 </div>
               )}
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
-                 const file = e.target.files[0];
-                 if (file) {
-                   const reader = new FileReader();
-                   reader.onloadend = () => setFormData({ ...formData, img: reader.result });
-                   reader.readAsDataURL(file);
-                 }
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setFormData({ ...formData, img: reader.result });
+                    reader.readAsDataURL(file);
+                  }
               }} />
+            </div>
+
+            {/* NEW: FEATURED STATUS SWITCHER */}
+            <div 
+              onClick={() => setFormData({...formData, isFeatured: !formData.isFeatured})}
+              className={`cursor-pointer p-6 rounded-[30px] border transition-all flex items-center justify-between group ${formData.isFeatured ? 'bg-yellow-400/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.1)]' : 'bg-[#0a0a0a] border-white/5 hover:border-white/20'}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-2xl transition-all ${formData.isFeatured ? 'bg-yellow-400 text-black' : 'bg-white/5 text-white/20'}`}>
+                  <Star size={20} fill={formData.isFeatured ? "black" : "none"} />
+                </div>
+                <div>
+                  <p className={`text-[10px] font-black uppercase tracking-widest ${formData.isFeatured ? 'text-yellow-400' : 'text-white/40'}`}>Featured Status</p>
+                  <p className="text-white text-xs font-bold">{formData.isFeatured ? 'Active in Carousel' : 'Hidden from Carousel'}</p>
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full relative transition-all ${formData.isFeatured ? 'bg-yellow-400' : 'bg-white/10'}`}>
+                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${formData.isFeatured ? 'right-1' : 'left-1'}`} />
+              </div>
             </div>
 
             <div className="bg-[#0a0a0a] border border-white/5 rounded-[30px] p-6 shadow-xl">
@@ -236,7 +218,7 @@ const AddProduct = () => {
             </div>
           </div>
 
-          {/* FORM FIELDS */}
+          {/* RIGHT COLUMN: FORM FIELDS */}
           <form onSubmit={handleSubmit} className="lg:col-span-8 space-y-8">
             <div className="grid grid-cols-2 gap-6 bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5">
               <div className="col-span-2 space-y-2">
@@ -270,6 +252,11 @@ const AddProduct = () => {
                 </div>
                 <input type="number" value={formData.discountPrice} onChange={(e) => setFormData({...formData, discountPrice: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-emerald-500 outline-none" placeholder={formData.discountType === 'flat' ? 'Amount' : '%'} />
               </div>
+            </div>
+
+            <div className="space-y-2 bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5">
+                <label className="text-[10px] font-black uppercase text-emerald-400 ml-2">Description</label>
+                <textarea rows="4" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-emerald-500 outline-none transition-all resize-none" placeholder="Details about this harvest..."></textarea>
             </div>
 
             <button type="submit" className="group w-full py-8 bg-emerald-500 text-white rounded-[30px] font-black text-[11px] uppercase tracking-[0.4em] hover:bg-emerald-400 transition-all hover:shadow-[0_20px_60px_rgba(16,185,129,0.3)] flex items-center justify-center gap-3">

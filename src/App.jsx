@@ -4,14 +4,16 @@ import { CartProvider } from './components/Cart/CartContext';
 
 // --- SHOP IMPORTS ---
 import Navbar from './components/Navbar/Navbar';
+import About from './pages/About';  
+import Contact from './pages/Contact';
 import Footer from './components/Footer/footer';
 import Home from './pages/Home';
 import Products from './pages/products';
 import ProductDetail from './pages/ProductDetail';
 import CartDrawer from './components/Cart/CartDrawer';
 import Checkout from './components/Cart/Checkout';
-import OrderSuccess from './components/Cart/OrderSuccess'; // Fixed Import
-import OrdersHistory from './components/Cart/OrderHistory'; // Fixed Import (Renamed for clarity)
+import OrderSuccess from './components/Cart/OrderSuccess';
+import OrdersHistory from './components/Cart/OrderHistory';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminLogin from './pages/Admin/AdminLogin';
@@ -26,12 +28,15 @@ import Analytics from './pages/Admin/Analytics';
 import Orders from './pages/Admin/Orders';
 import Customers from './pages/Admin/Customers';
 import Transactions from './pages/Admin/Transactions';
-import Settings, { 
-  GeneralSettingsForm, 
-  ShippingSettingsForm, 
-  PaymentSettingsForm, 
-  SecuritySettingsForm 
-} from './pages/Admin/Settings';
+
+// Import Settings Layout and its sub-views
+import Settings from './components/Admin/Settings/Settings';
+import { 
+  ProfileView, 
+  ShippingView, 
+  PaymentsView, 
+  SecurityView 
+} from './components/Admin/Settings/SettingsTabs';
 
 // --- UTILITIES ---
 const ScrollToTop = () => {
@@ -50,7 +55,7 @@ const ShopLayout = () => (
   <>
     <Navbar />
     <CartDrawer />
-    <main>
+    <main className="min-h-screen"> 
       <Outlet />
     </main>
     <Footer />
@@ -59,8 +64,10 @@ const ShopLayout = () => (
 
 const AdminLayout = () => (
   <div className="flex min-h-screen w-full bg-[#04160f] relative overflow-hidden">
+    {/* Decorative Background Elements */}
     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none"></div>
     <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-emerald-800/10 rounded-full blur-[100px] pointer-events-none"></div>
+    
     <AdminSidebar />
     <main className="flex-grow p-10 relative z-10">
       <div className="max-w-7xl mx-auto">
@@ -82,6 +89,8 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/orders" element={<OrdersHistory />} />
@@ -90,7 +99,14 @@ const App = () => {
           </Route>
 
           {/* 2. ADMIN LOGIN */}
-          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route 
+            path="/admin-login" 
+            element={
+              localStorage.getItem('adminAuthenticated') === 'true' 
+              ? <Navigate to="/admin" replace /> 
+              : <AdminLogin />
+            } 
+          />
 
           {/* 3. PROTECTED ADMIN ROUTES */}
           <Route element={<ProtectedAdmin />}>
@@ -104,12 +120,13 @@ const App = () => {
               <Route path="customers" element={<Customers />} />
               <Route path="transactions" element={<Transactions />} />
               
+              {/* Settings Nested Routes */}
               <Route path="settings" element={<Settings />}>
-                <Route index element={<Navigate to="general" replace />} />
-                <Route path="general" element={<GeneralSettingsForm />} />
-                <Route path="shipping" element={<ShippingSettingsForm />} />
-                <Route path="payments" element={<PaymentSettingsForm />} />
-                <Route path="security" element={<SecuritySettingsForm />} />
+                <Route index element={<ProfileView />} />
+                <Route path="profile" element={<ProfileView />} />
+                <Route path="shipping" element={<ShippingView />} />
+                <Route path="payments" element={<PaymentsView />} />
+                <Route path="security" element={<SecurityView />} />
               </Route>
             </Route>
           </Route>

@@ -6,14 +6,14 @@ import {
   Globe, Truck, CreditCard, ShieldCheck, Users, BarChart3, Tag, MessageSquare
 } from 'lucide-react';
 
-// 1. Centralized Menu Configuration
 const MENU_GROUPS = [
   {
     label: 'Main Menu',
     items: [
       { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-      { name: 'Orders', icon: ShoppingBag, path: '/admin/orders', badge: '' },
+      { name: 'Orders', icon: ShoppingBag, path: '/admin/orders' },
       { name: 'Customers', icon: Users, path: '/admin/customers' },
+      { name: 'Transactions', icon: CreditCard, path: '/admin/transactions' },
     ]
   },
   {
@@ -38,10 +38,29 @@ const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [isSettingsOpen, setIsSettingsOpen] = useState(location.pathname.startsWith('/admin/settings'));
+  const [orderCount, setOrderCount] = useState(0);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(location.pathname.includes('/admin/settings'));
+
+  // Function to calculate orders from localStorage
+  const updateOrderBadge = () => {
+    const savedOrders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
+    setOrderCount(savedOrders.length);
+  };
 
   useEffect(() => {
-    if (location.pathname.startsWith('/admin/settings')) setIsSettingsOpen(true);
+    updateOrderBadge();
+    // Listen for storage changes across tabs and custom events in the same tab
+    window.addEventListener('storage', updateOrderBadge);
+    window.addEventListener('orderUpdate', updateOrderBadge);
+
+    return () => {
+      window.removeEventListener('storage', updateOrderBadge);
+      window.removeEventListener('orderUpdate', updateOrderBadge);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname.includes('/admin/settings')) setIsSettingsOpen(true);
   }, [location.pathname]);
 
   return (
@@ -63,9 +82,7 @@ const AdminSidebar = () => {
       <nav className="flex-grow px-4 space-y-6 overflow-y-auto custom-scrollbar">
         {MENU_GROUPS.map((group) => (
           <div key={group.label} className="space-y-1">
-            <p className="px-4 py-2 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">
-              {group.label}
-            </p>
+            <p className="px-4 py-2 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">{group.label}</p>
             {group.items.map((item) => (
               <NavLink 
                 key={item.path} 
@@ -82,9 +99,11 @@ const AdminSidebar = () => {
                   <item.icon size={18} className="group-hover:scale-110 transition-transform" />
                   <span className="text-xs font-bold uppercase tracking-wider">{item.name}</span>
                 </div>
-                {item.badge && (
-                  <span className="bg-emerald-500 text-[10px] text-black font-bold px-1.5 py-0.5 rounded-md">
-                    {item.badge}
+                
+                {/* DYNAMIC BADGE FOR ORDERS */}
+                {item.name === 'Orders' && orderCount > 0 && (
+                  <span className="bg-emerald-500 text-[10px] text-black font-black px-2 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                    {orderCount}
                   </span>
                 )}
               </NavLink>
@@ -92,7 +111,7 @@ const AdminSidebar = () => {
           </div>
         ))}
 
-        {/* SETTINGS SECTION */}
+        {/* SETTINGS ACCORDION */}
         <div className="pb-4">
           <p className="px-4 py-2 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Configuration</p>
           <button 
@@ -100,21 +119,21 @@ const AdminSidebar = () => {
             className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${isSettingsOpen ? 'text-white bg-white/5' : 'text-white/40 hover:text-white'}`}
           >
             <div className="flex items-center gap-4">
-              <SettingsIcon size={18} className={isSettingsOpen ? 'text-emerald-500' : ''} />
+              <SettingsIcon size={18} className={`${isSettingsOpen ? 'text-emerald-400' : ''} transition-colors`} />
               <span className="text-xs font-bold uppercase tracking-wider">Settings</span>
             </div>
             <ChevronDown size={14} className={`transition-transform duration-500 ${isSettingsOpen ? 'rotate-180 text-emerald-500' : ''}`} />
           </button>
 
           <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isSettingsOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="ml-6 mt-2 border-l border-white/5 space-y-1">
+            <div className="ml-6 mt-2 border-l border-white/10 space-y-1">
               {['Profile', 'Shipping', 'Payments', 'Security'].map((sub) => (
                 <NavLink 
                   key={sub}
                   to={`/admin/settings/${sub.toLowerCase()}`}
                   className={({ isActive }) => `
-                    flex items-center gap-3 ml-4 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all
-                    ${isActive ? 'text-emerald-400 bg-emerald-500/5' : 'text-white/20 hover:text-white hover:bg-white/5'}
+                    flex items-center gap-3 ml-4 px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all
+                    ${isActive ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/30 hover:text-white hover:bg-white/5'}
                   `}
                 >
                   {sub}
@@ -125,21 +144,14 @@ const AdminSidebar = () => {
         </div>
       </nav>
 
-      {/* FOOTER */}
+      {/* FOOTER ACTIONS */}
       <div className="p-6 mt-auto shrink-0 space-y-3 bg-[#020c08]">
-        <button 
-          onClick={() => navigate('/')} 
-          className="flex items-center gap-4 px-4 py-2 text-white/30 hover:text-emerald-400 transition-colors w-full group"
-        >
+        <button onClick={() => navigate('/')} className="flex items-center gap-4 px-4 py-2 text-white/30 hover:text-emerald-400 transition-colors w-full group">
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-[9px] font-black uppercase tracking-[0.2em]">Back to Store</span>
         </button>
-        
-        <button 
-          onClick={() => { localStorage.removeItem('adminAuthenticated'); navigate('/admin-login'); }} 
-          className="flex items-center gap-4 px-4 py-3 rounded-xl bg-red-500/5 text-red-500/60 border border-red-500/10 hover:bg-red-500 hover:text-white transition-all duration-500 w-full"
-        >
-          <LogOut size={18} />
+        <button onClick={() => { localStorage.removeItem('adminAuthenticated'); navigate('/admin-login'); }} className="flex items-center gap-4 px-4 py-3 rounded-xl bg-red-500/5 text-red-500/60 border border-red-500/10 hover:bg-red-500 hover:text-white transition-all duration-500 w-full group">
+          <LogOut size={18} className="group-hover:rotate-12 transition-transform" />
           <span className="text-xs font-bold uppercase tracking-widest">Logout System</span>
         </button>
       </div>
