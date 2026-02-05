@@ -19,9 +19,9 @@ const MENU_GROUPS = [
   {
     label: 'Inventory',
     items: [
-      { name: 'Manage Tea', icon: Leaf, path: '/admin/products' },
-      { name: 'Add Variety', icon: PlusCircle, path: '/admin/add-product' },
-      { name: 'Categories', icon: Tag, path: '/admin/categories' },
+      { name: 'Manage Products', icon: Leaf, path: '/admin/products' },
+      { name: 'Add Products', icon: PlusCircle, path: '/admin/add-product' },
+      { name: 'Add Categories', icon: Tag, path: '/admin/categories' },
     ]
   },
   {

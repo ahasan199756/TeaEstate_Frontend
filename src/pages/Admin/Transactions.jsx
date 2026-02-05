@@ -39,7 +39,7 @@ const Transactions = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
-            Financial <span className="text-emerald-500">Ledger</span>
+            Payment <span className="text-emerald-500">Transactions</span>
           </h1>
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2">
             Audit trail of all estate commerce

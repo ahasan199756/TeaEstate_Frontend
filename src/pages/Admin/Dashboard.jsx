@@ -61,7 +61,7 @@ const AdminDashboard = () => {
              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.4em]">Secure Admin Authority</span>
           </div>
           <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">
-            Estate <span className="text-emerald-500">Audit</span>
+            Dashboard 
           </h1>
         </div>
 

@@ -121,10 +121,10 @@ const AddProduct = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
         <div>
           <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
-            {editData ? 'Modify Item' : 'New Harvest'}
+            {editData ? 'Modify Item' : 'Add product'}
           </h1>
           <div className="flex items-center gap-3 mt-4">
-            <span className="px-3 py-1 bg-emerald-500 text-[9px] font-black text-white uppercase rounded-full">Inventory v2.0</span>
+            <span className="px-3 py-1 bg-emerald-500 text-[9px] font-black text-white uppercase rounded-full"></span>
             <p className="text-white/20 font-bold text-[10px] uppercase tracking-[0.2em]">Database Management System</p>
           </div>
         </div>
