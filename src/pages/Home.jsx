@@ -170,7 +170,7 @@ const Home = () => {
               <div className="absolute -inset-4 bg-emerald-500/10 backdrop-blur-3xl rounded-[60px] -rotate-1 scale-95 group-hover:rotate-0 transition-transform duration-700 border border-white/5 shadow-2xl"></div>
               <div className="relative overflow-hidden rounded-[50px] shadow-2xl aspect-video border border-white/10">
                 <img 
-                  src="https://images.unsplash.com/photo-1544739313-6fad02872377?auto=format&fit=crop&q=80&w=2000" 
+                  src="public\misty-tea-fields-stockcake.webp" 
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
                   alt="Heritage" 
                 />

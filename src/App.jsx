@@ -47,6 +47,8 @@ const ScrollToTop = () => {
 
 const ProtectedAdmin = () => {
   const isAuth = localStorage.getItem('adminAuthenticated') === 'true';
+  // If not auth, go to login. 
+  // 'replace' is important so they can't click "back" into the protected zone.
   return isAuth ? <Outlet /> : <Navigate to="/admin-login" replace />;
 };
 
@@ -63,13 +65,17 @@ const ShopLayout = () => (
 );
 
 const AdminLayout = () => (
-  <div className="flex min-h-screen w-full bg-[#04160f] relative overflow-hidden">
+  /* 1. Changed min-h-screen to h-screen and added overflow-hidden */
+  <div className="flex h-screen w-full bg-[#04160f] relative overflow-hidden">
+    
     {/* Decorative Background Elements */}
     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none"></div>
     <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-emerald-800/10 rounded-full blur-[100px] pointer-events-none"></div>
     
     <AdminSidebar />
-    <main className="flex-grow p-10 relative z-10">
+
+    {/* 2. Added overflow-y-auto to allow only the content area to scroll */}
+    <main className="flex-grow p-10 relative z-10 overflow-y-auto custom-scrollbar">
       <div className="max-w-7xl mx-auto">
         <Outlet />
       </div>
@@ -110,7 +116,9 @@ const App = () => {
 
           {/* 3. PROTECTED ADMIN ROUTES */}
           <Route element={<ProtectedAdmin />}>
+          <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
+            
               <Route index element={<Dashboard />} />
               <Route path="products" element={<ManageProducts />} />
               <Route path="add-product" element={<AddProduct />} />
