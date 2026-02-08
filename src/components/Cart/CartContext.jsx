@@ -3,31 +3,35 @@ import { createContext, useContext, useState, useEffect } from "react";
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  // Initialize cart from localStorage so items persist on refresh
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("tea_cart");
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Sync cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("tea_cart", JSON.stringify(cart));
   }, [cart]);
 
-  // --- LOGIC: Add to Cart ---
+  // --- FIXED LOGIC: Respects incoming quantity ---
   const addToCart = (product) => {
     setCart((prev) => {
-      const isItemInCart = prev.find((item) => item.id === product.id);
-      if (isItemInCart) {
+      const existingItem = prev.find((item) => item.id === product.id);
+      
+      // Determine how many we are adding (default to 1 if not specified)
+      const amountToAdd = product.quantity || 1;
+
+      if (existingItem) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + amountToAdd } 
+            : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      // If new, spread the product (which now includes the correct price and quantity)
+      return [...prev, { ...product, quantity: amountToAdd }];
     });
   };
 
-  // --- LOGIC: Decrease Quantity ---
   const decreaseQuantity = (id) => {
     setCart((prev) =>
       prev.map((item) =>
@@ -38,20 +42,21 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // --- LOGIC: Remove Item ---
   const removeFromCart = (id) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // --- LOGIC: Clear Cart (Call this after successful checkout) ---
   const clearCart = () => {
     setCart([]);
     localStorage.removeItem("tea_cart");
   };
 
-  // --- CALCULATIONS ---
-  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-  const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  // --- CALCULATIONS (Fixed to ensure numbers) ---
+  const totalItems = cart.reduce((total, item) => total + (item.quantity || 0), 0);
+  const subtotal = cart.reduce((total, item) => {
+    const price = parseFloat(item.price || item.basePrice || 0);
+    return total + (price * item.quantity);
+  }, 0);
 
   return (
     <CartContext.Provider 
@@ -60,7 +65,7 @@ export const CartProvider = ({ children }) => {
         addToCart, 
         decreaseQuantity, 
         removeFromCart, 
-        clearCart, // NEW
+        clearCart, 
         totalItems, 
         subtotal 
       }}

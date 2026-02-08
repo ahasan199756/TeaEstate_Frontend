@@ -18,6 +18,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminLogin from './pages/Admin/AdminLogin';
 
+// --- USER PROFILE SYSTEM ---
+import UserLayout from './pages/User'; // Your Sidebar Layout
+import ProfileSettings from './pages/ProfileSettings'; // Your Account Settings Form
+
 // --- ADMIN IMPORTS ---
 import AdminSidebar from './components/Admin/AdminSidebar';
 import Dashboard from './pages/Admin/Dashboard';
@@ -29,16 +33,9 @@ import Orders from './pages/Admin/Orders';
 import Customers from './pages/Admin/Customers';
 import Transactions from './pages/Admin/Transactions';
 
-// Import Settings Layout and its sub-views
 import Settings from './components/Admin/Settings/Settings';
-import { 
-  ProfileView, 
-  ShippingView, 
-  PaymentsView, 
-  SecurityView 
-} from './components/Admin/Settings/SettingsTabs';
+import { ProfileView, ShippingView, PaymentsView, SecurityView } from './components/Admin/Settings/SettingsTabs';
 
-// --- UTILITIES ---
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
@@ -47,12 +44,9 @@ const ScrollToTop = () => {
 
 const ProtectedAdmin = () => {
   const isAuth = localStorage.getItem('adminAuthenticated') === 'true';
-  // If not auth, go to login. 
-  // 'replace' is important so they can't click "back" into the protected zone.
   return isAuth ? <Outlet /> : <Navigate to="/admin-login" replace />;
 };
 
-// --- LAYOUTS ---
 const ShopLayout = () => (
   <>
     <Navbar />
@@ -64,25 +58,51 @@ const ShopLayout = () => (
   </>
 );
 
-const AdminLayout = () => (
-  /* 1. Changed min-h-screen to h-screen and added overflow-hidden */
-  <div className="flex h-screen w-full bg-[#04160f] relative overflow-hidden">
-    
-    {/* Decorative Background Elements */}
-    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none"></div>
-    <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-emerald-800/10 rounded-full blur-[100px] pointer-events-none"></div>
-    
-    <AdminSidebar />
+;
 
-    {/* 2. Added overflow-y-auto to allow only the content area to scroll */}
-    <main className="flex-grow p-10 relative z-10 overflow-y-auto custom-scrollbar">
-      <div className="max-w-7xl mx-auto">
-        <Outlet />
-      </div>
-    </main>
-  </div>
-);
+const AdminLayout = () => {
+  return (
+    /* BACKGROUND STRATEGY: 
+       We use a subtle vertical gradient from Slate-50 (top) to White (bottom).
+       This mimics natural studio lighting, making the dashboard feel expensive.
+    */
+    <div className="flex h-screen w-full bg-gradient-to-b from-[#f2f4f7] to-[#ffffff] text-slate-900 overflow-hidden relative">
+      
+      {/* ARCHITECTURAL ACCENTS:
+         Instead of colorful blurs, we use soft gray "smoke" blurs 
+         to create depth without looking like a gaming app.
+      */}
+      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-slate-200/40 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-slate-100/60 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
+      {/* SIDEBAR */}
+      <AdminSidebar />
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-grow overflow-y-auto custom-scrollbar relative">
+        {/* The Container: 
+            Increased padding for a "Gallery" feel. 
+        */}
+        <div className="max-w-[1600px] mx-auto p-8 md:p-12 lg:p-16">
+          
+          {/* Global Header Modifier:
+              This ensures any page rendered inside has that sharp 
+              black-to-white contrast.
+          */}
+          <div className="relative z-10">
+            <Outlet />
+          </div>
+        </div>
+
+        {/* Decorative "Scanline": 
+            A very thin, 1px top border across the main area 
+            adds a subtle "precision" feel.
+        */}
+        <div className="fixed top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent pointer-events-none" />
+      </main>
+    </div>
+  );
+};
 const App = () => {
   return (
     <CartProvider>
@@ -90,7 +110,7 @@ const App = () => {
         <ScrollToTop />
         <Routes>
           
-          {/* 1. PUBLIC SHOP ROUTES */}
+          {/* PUBLIC SHOP ROUTES */}
           <Route element={<ShopLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
@@ -99,26 +119,27 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success" element={<OrderSuccess />} />
-            <Route path="/orders" element={<OrdersHistory />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* CONNECTED USER PROFILE ROUTES */}
+            <Route path="/profile" element={<UserLayout />}>
+              <Route index element={<ProfileSettings />} /> 
+              <Route path="orders" element={<OrdersHistory />} />
+              <Route path="wishlist" element={<div>Wishlist Coming Soon</div>} />
+              <Route path="addresses" element={<div>Address Management Coming Soon</div>} />
+              <Route path="settings" element={<ProfileSettings />} />
+            </Route>
           </Route>
 
-          {/* 2. ADMIN LOGIN */}
+          {/* ADMIN LOGIN */}
           <Route 
             path="/admin-login" 
-            element={
-              localStorage.getItem('adminAuthenticated') === 'true' 
-              ? <Navigate to="/admin" replace /> 
-              : <AdminLogin />
-            } 
+            element={localStorage.getItem('adminAuthenticated') === 'true' ? <Navigate to="/admin" replace /> : <AdminLogin />} 
           />
 
-          {/* 3. PROTECTED ADMIN ROUTES */}
           <Route element={<ProtectedAdmin />}>
-          <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
-            
               <Route index element={<Dashboard />} />
               <Route path="products" element={<ManageProducts />} />
               <Route path="add-product" element={<AddProduct />} />
@@ -127,8 +148,6 @@ const App = () => {
               <Route path="orders" element={<Orders />} />
               <Route path="customers" element={<Customers />} />
               <Route path="transactions" element={<Transactions />} />
-              
-              {/* Settings Nested Routes */}
               <Route path="settings" element={<Settings />}>
                 <Route index element={<ProfileView />} />
                 <Route path="profile" element={<ProfileView />} />
@@ -139,7 +158,6 @@ const App = () => {
             </Route>
           </Route>
 
-          {/* 4. FALLBACK */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

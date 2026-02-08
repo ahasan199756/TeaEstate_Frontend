@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, Package, ShoppingBag, Users, TrendingUp, AlertTriangle, 
   Activity, Clock, ChevronRight, Search, Plus, Filter, ArrowUpRight,
-  MousePointerClick, Archive, RefreshCcw, ShieldCheck, 
-  Calendar // <--- Add this one!
+  Archive, RefreshCcw, ShieldCheck, Calendar, MoreHorizontal
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -15,13 +14,11 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    // 1. DATA SYNC (The Interconnect)
     const products = JSON.parse(localStorage.getItem('teaProducts') || '[]');
     const orders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
     
-    // 2. TEMPORAL ENGINE
     const now = new Date();
-    const startOfDay = new Date(now.setHours(0,0,0,0));
+    const startOfDay = new Date(new Date().setHours(0,0,0,0));
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -31,8 +28,8 @@ const AdminDashboard = () => {
 
     setData({
       products,
-      orders,
-      customers: [...new Set(orders.map(o => o.customerEmail))], // Derived unique customers
+      orders: [...orders].reverse(), 
+      customers: [...new Set(orders.map(o => o.email))],
       temporal: {
         today: getSales(startOfDay),
         weekly: getSales(startOfWeek),
@@ -41,163 +38,152 @@ const AdminDashboard = () => {
     });
   }, []);
 
-  // CALCULATIONS
   const totalRev = data.orders.reduce((acc, o) => acc + Number(o.total || 0), 0);
   const lowStock = data.products.filter(p => Number(p.stock) < 10).length;
-  const aov = data.orders.length > 0 ? (totalRev / data.orders.length).toFixed(2) : 0;
+  const aov = data.orders.length > 0 ? (totalRev / data.orders.length).toFixed(0) : 0;
+  const config = { currency: '৳' };
 
-  // STYLING PRESETS
-  const glassPanel = "bg-[#0a0a0a] border border-white/5 rounded-[2rem] shadow-2xl overflow-hidden";
-  const labelText = "text-[10px] font-black text-white/30 uppercase tracking-[0.2em]";
+  // STYLE PRESETS - Label text is now Emerald Green by default
+  const cardStyle = "bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden";
+  const labelStyle = "text-[11px] font-black text-emerald-600 uppercase tracking-widest";
 
   return (
-    <div className="min-h-screen space-y-8 p-6 pb-24 text-white animate-in fade-in duration-1000">
+    <div className="min-h-screen bg-white p-4 md:p-8 lg:p-12 text-slate-900 font-sans antialiased">
       
-      {/* 1. GLOBAL COMMAND HEADER */}
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-             <ShieldCheck size={14} className="text-emerald-500" />
-             <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.4em]">Secure Admin Authority</span>
+      {/* 1. HEADER */}
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em]">Live System Metrics</span>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">
-            Dashboard 
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
+            Dashboard <span className="text-emerald-500 font-light italic">Core</span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-500 transition-colors" size={18} />
+        <div className="flex items-center gap-3 w-full lg:w-auto">
+          <div className="relative flex-1 lg:w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
             <input 
               type="text" 
-              placeholder="GLOBAL SEARCH (ORDERS, SKUS...)" 
-              className="bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-[10px] font-bold w-72 focus:outline-none focus:border-emerald-500/50 transition-all uppercase tracking-widest"
+              placeholder="SEARCH DATA..." 
+              className="w-full bg-emerald-50/30 border border-emerald-100 rounded-2xl py-4 pl-12 pr-4 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all uppercase tracking-wider"
             />
           </div>
-          <button className="bg-emerald-500 p-4 rounded-2xl text-black hover:scale-105 transition-transform">
-            <Plus size={20} />
-          </button>
         </div>
       </header>
 
-      {/* 2. AT-A-GLANCE KPIs (Today / Week / Month) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* 2. KPI GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {[
-          { label: 'Yield: Today', val: data.temporal.today, icon: Clock, color: 'text-white' },
-          { label: 'Yield: 7 Days', val: data.temporal.weekly, icon: TrendingUp, color: 'text-emerald-500' },
-          { label: 'Yield: 30 Days', val: data.temporal.monthly, icon: Calendar, color: 'text-white' }
+          { label: 'Revenue Today', val: data.temporal.today, icon: Clock },
+          { label: 'Total Sales', val: totalRev, icon: TrendingUp },
+          { label: 'Avg Order Value', val: aov, icon: Activity },
+          { label: 'Total Customers', val: data.customers.length, icon: Users, isCurrency: false }
         ].map((kpi, i) => (
-          <div key={i} className={`${glassPanel} p-8 flex justify-between items-center group cursor-pointer`}>
-            <div>
-              <p className={labelText}>{kpi.label}</p>
-              <h3 className={`text-4xl font-black font-mono mt-1 ${kpi.color}`}>৳{kpi.val.toLocaleString()}</h3>
+          <div key={i} className={`${cardStyle} p-7 border-l-4 border-l-emerald-500`}>
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
+                <kpi.icon size={22} />
+              </div>
             </div>
-            <kpi.icon className="text-white/10 group-hover:text-emerald-500 transition-colors" size={40} />
+            <div>
+              <p className={labelStyle}>{kpi.label}</p>
+              <h3 className="text-3xl font-black mt-1 tracking-tighter text-slate-900">
+                {kpi.isCurrency === false ? '' : config.currency}
+                {kpi.val.toLocaleString()}
+              </h3>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* 3. CORE ANALYTICS MATRIX */}
-      
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Orders Overview */}
-        <div className={`${glassPanel} p-8 lg:col-span-1 border-t-4 border-emerald-500`}>
-          <p className={labelText}>Conversion Engine</p>
-          <div className="mt-6 space-y-8">
-            <div>
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-2xl font-black italic uppercase">Orders</span>
-                <span className="text-emerald-500 font-mono text-sm">{data.orders.length}</span>
-              </div>
-              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 w-[75%]" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/5 p-4 rounded-2xl">
-                <p className={labelText}>AOV</p>
-                <p className="text-lg font-bold">৳{aov}</p>
-              </div>
-              <div className="bg-white/5 p-4 rounded-2xl">
-                <p className={labelText}>Users</p>
-                <p className="text-lg font-bold">{data.customers.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Orders Management */}
-        <div className={`${glassPanel} lg:col-span-3`}>
-          <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-            <h3 className="text-sm font-black uppercase tracking-widest italic">Live Order Stream</h3>
-            <Activity className="text-emerald-500 animate-pulse" size={16} />
+      {/* 3. CORE ANALYTICS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* RECENT ORDERS */}
+        <div className={`${cardStyle} lg:col-span-2 shadow-lg shadow-emerald-900/5`}>
+          <div className="p-8 border-b border-emerald-50 flex justify-between items-center bg-emerald-50/10">
+            <h3 className="font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 text-sm">
+               Live Order Stream
+            </h3>
+            <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-black/40">
-                <tr>
-                  <th className={`p-6 ${labelText}`}>Reference</th>
-                  <th className={`p-6 ${labelText}`}>Customer</th>
-                  <th className={`p-6 ${labelText}`}>Status</th>
-                  <th className={`p-6 ${labelText} text-right`}>Value</th>
+              <thead>
+                <tr className="bg-emerald-50/30">
+                  <th className="px-8 py-4 text-[10px] font-black text-emerald-700 uppercase tracking-widest">ID</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-emerald-700 uppercase tracking-widest">Customer</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-emerald-700 uppercase tracking-widest text-right">Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
-                {data.orders.slice(0, 5).map((order, i) => (
-                  <tr key={i} className="hover:bg-white/[0.02] transition-colors group cursor-pointer">
-                    <td className="p-6 font-mono text-xs text-white/40 group-hover:text-emerald-500 transition-colors">#{order.id?.toString().slice(-8).toUpperCase()}</td>
-                    <td className="p-6 font-bold text-sm">{order.customerName || 'Anonymous'}</td>
-                    <td className="p-6">
-                      <span className="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-3 py-1 rounded-full border border-emerald-500/20 uppercase">Paid</span>
+              <tbody className="divide-y divide-emerald-50">
+                {data.orders.slice(0, 8).map((order, i) => (
+                  <tr key={i} className="hover:bg-emerald-50/20 transition-colors cursor-pointer">
+                    <td className="px-8 py-5 font-mono text-[12px] font-bold text-emerald-600">#{order.id?.toString().slice(-6).toUpperCase()}</td>
+                    <td className="px-8 py-5">
+                      <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{order.customerName}</p>
+                      <p className="text-[11px] font-bold text-emerald-600/70">{order.email}</p>
                     </td>
-                    <td className="p-6 text-right font-mono font-bold">৳{order.total}</td>
+                    <td className="px-8 py-5 text-right font-black text-slate-900 text-sm">
+                      {config.currency}{Number(order.total).toLocaleString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
-      </div>
 
-      {/* 4. INVENTORY & MARKETING ALERTS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Stock Management */}
-        <div className={`${glassPanel} p-10 bg-gradient-to-br from-[#0c0c0c] to-black`}>
-          <div className="flex justify-between items-center mb-10">
-            <div className="flex items-center gap-3">
-              <Archive className="text-emerald-500" size={24} />
-              <h3 className="text-xl font-black uppercase italic tracking-tighter">Inventory Health</h3>
-            </div>
-            <button className="text-[10px] font-black text-white/20 hover:text-white uppercase tracking-widest">Restock All</button>
-          </div>
-          <div className="grid grid-cols-2 gap-8">
-            <div className="space-y-1">
-              <p className={labelText}>Low Stock Warnings</p>
-              <p className={`text-4xl font-black font-mono ${lowStock > 0 ? 'text-orange-500' : 'text-emerald-500'}`}>{lowStock}</p>
-            </div>
-            <div className="space-y-1">
-              <p className={labelText}>Asset Valuation</p>
-              <p className="text-4xl font-black font-mono">৳{totalRev.toLocaleString()}</p>
+        {/* INVENTORY WIDGET */}
+        <div className="space-y-6">
+          <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-xl font-black uppercase tracking-tighter mb-8 text-emerald-400">Inventory Status</h3>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest mb-1">Low Stock</p>
+                  <p className="text-4xl font-black text-white">{lowStock}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest mb-1">Products</p>
+                  <p className="text-4xl font-black text-white">{data.products.length}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Quick Actions Panel */}
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { label: 'Add SKU', icon: Plus, color: 'bg-emerald-500 text-black' },
-            { label: 'Fulfill', icon: Package, color: 'bg-white/5 text-white' },
-            { label: 'Marketing', icon: MousePointerClick, color: 'bg-white/5 text-white' },
-            { label: 'Refresh', icon: RefreshCcw, color: 'bg-white/5 text-white' }
-          ].map((btn, i) => (
-            <button key={i} className={`${btn.color} rounded-[2rem] p-8 flex flex-col items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl`}>
-              <btn.icon size={24} />
-              <span className="text-[10px] font-black uppercase tracking-widest">{btn.label}</span>
+          <div className="grid grid-cols-2 gap-4">
+            <button className="bg-white border-2 border-emerald-50 p-6 rounded-[28px] flex flex-col items-center gap-4 hover:border-emerald-500 transition-all group">
+              <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                <Plus size={24} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">New Product</span>
             </button>
-          ))}
+            <button className="bg-white border-2 border-emerald-50 p-6 rounded-[28px] flex flex-col items-center gap-4 hover:border-emerald-500 transition-all group">
+              <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                <RefreshCcw size={24} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Sync Inventory</span>
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* FOOTER */}
+      <footer className="mt-12 pt-8 border-t border-emerald-50 flex justify-between items-center text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+        <p>© Estate Admin Dashboard</p>
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1"><ShieldCheck size={14}/> Encrypted</span>
+          <span className="text-slate-200">|</span>
+          <span>Session: Active</span>
+        </div>
+      </footer>
     </div>
   );
 };

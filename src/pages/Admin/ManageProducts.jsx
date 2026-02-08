@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Edit3, Trash2, Plus, Search, ChevronLeft, ChevronRight, Star } from 'lucide-react'; // Added Star
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Edit3, Trash2, Plus, Search, ChevronLeft, 
+  ChevronRight, Star, Package, ShoppingBag, Filter 
+} from 'lucide-react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import { initialProductItems as initialData } from '../products';
 
@@ -10,6 +13,10 @@ const ManageProducts = () => {
   const itemsPerPage = 8;
   const navigate = useNavigate();
 
+  // Design Tokens (Matching your new theme)
+  const glassCard = "bg-white/70 backdrop-blur-xl border border-white shadow-[0_8px_32px_0_rgba(15,23,42,0.06)]";
+  const glassInput = "bg-white/50 border border-slate-200 focus:border-emerald-500 focus:bg-white transition-all outline-none shadow-inner";
+
   useEffect(() => {
     const savedProducts = localStorage.getItem('teaProducts');
     if (savedProducts) {
@@ -19,7 +26,6 @@ const ManageProducts = () => {
     }
   }, []);
 
-  // --- LOGIC: TOGGLE FEATURED ---
   const toggleFeatured = (id) => {
     const updated = products.map(p => 
       p.id === id ? { ...p, isFeatured: !p.isFeatured } : p
@@ -29,7 +35,7 @@ const ManageProducts = () => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to remove this tea?")) {
+    if (window.confirm("Are you sure you want to remove this tea from the inventory?")) {
       const updated = products.filter(p => p.id !== id);
       setProducts(updated);
       localStorage.setItem('teaProducts', JSON.stringify(updated));
@@ -37,66 +43,119 @@ const ManageProducts = () => {
   };
 
   // Filter & Pagination Logic
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
+
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const currentItems = filteredProducts.slice(indexOfLastItem - itemsPerPage, indexOfLastItem);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* ... (Existing TOP BAR remains the same) ... */}
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      
+      {/* HEADER SECTION */}
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]" />
+            <p className="text-emerald-600 font-black text-[10px] uppercase tracking-[0.3em]">Inventory Control</p>
+          </div>
+          <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter">
+            Manage <span className="text-emerald-500 font-light italic lowercase tracking-normal">Products</span>
+          </h1>
+        </div>
 
-      <div className="bg-[#0a0a0a]/50 border border-white/5 rounded-[40px] overflow-hidden backdrop-blur-md shadow-2xl">
-        <table className="w-full text-left border-collapse">
+        <button 
+          onClick={() => navigate('/admin/add-product')}
+          className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-200 active:scale-95"
+        >
+          <Plus size={18} /> Add New Tea
+        </button>
+      </header>
+
+      {/* SEARCH & FILTER BAR */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-grow group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
+          <input 
+            type="text" 
+            placeholder="Search by name or category..."
+            className={`${glassInput} w-full rounded-2xl py-5 pl-14 pr-6 text-slate-900 text-[11px] font-black tracking-widest uppercase placeholder:text-slate-300`}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* PRODUCTS TABLE */}
+      <div className={`${glassCard} rounded-[40px] overflow-hidden`}>
+        <table className="w-full text-left border-separate border-spacing-0">
           <thead>
-            <tr className="border-b border-white/5 bg-white/[0.02]">
-              <th className="p-6 text-[10px] font-black uppercase text-emerald-500 tracking-widest">Featured</th>
-              <th className="p-6 text-[10px] font-black uppercase text-emerald-500 tracking-widest">Visual</th>
-              <th className="p-6 text-[10px] font-black uppercase text-emerald-500 tracking-widest">Product Details</th>
-              <th className="p-6 text-[10px] font-black uppercase text-emerald-500 tracking-widest text-right">Actions</th>
+            <tr className="bg-slate-50/50">
+              <th className="p-8 text-[10px] font-black uppercase text-emerald-600 tracking-widest border-b border-slate-100">Status</th>
+              <th className="p-8 text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-100">Preview</th>
+              <th className="p-8 text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-100">Product Details</th>
+              <th className="p-8 text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-100 text-right">Operations</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.03]">
+          <tbody className="divide-y divide-slate-50">
             {currentItems.map((item) => (
-              <tr key={item.id} className="group hover:bg-white/[0.02] transition-colors">
-                {/* NEW FEATURED TOGGLE CELL */}
-                <td className="p-6">
+              <tr key={item.id} className="group hover:bg-white/80 transition-all">
+                {/* FEATURED TOGGLE */}
+                <td className="p-8">
                   <button 
                     onClick={() => toggleFeatured(item.id)}
-                    className={`transition-all duration-300 ${item.isFeatured ? 'text-yellow-400 scale-125' : 'text-white/10 hover:text-white/30'}`}
+                    className={`transition-all duration-300 transform hover:scale-110 ${item.isFeatured ? 'text-yellow-500' : 'text-slate-200 hover:text-slate-400'}`}
                   >
-                    <Star size={20} fill={item.isFeatured ? "currentColor" : "none"} />
+                    <Star size={24} fill={item.isFeatured ? "currentColor" : "none"} strokeWidth={item.isFeatured ? 0 : 2} />
                   </button>
                 </td>
 
-                <td className="p-6">
-                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-white/10">
-                    <img src={item.img} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                {/* IMAGE */}
+                <td className="p-8">
+                  <div className="relative w-20 h-20 rounded-[28px] overflow-hidden border-4 border-white shadow-sm group-hover:shadow-md transition-all">
+                    <img src={item.img} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   </div>
                 </td>
                 
-                <td className="p-6">
-                  <p className="text-white font-bold text-base leading-none mb-1 uppercase tracking-tight">
-                    {item.name} 
-                    {item.isFeatured && <span className="ml-2 text-[8px] bg-yellow-400/10 text-yellow-400 px-2 py-0.5 rounded-full">FEATURED</span>}
-                  </p>
-                  <p className="text-white/30 text-[10px] font-medium uppercase tracking-wider">{item.category}</p>
+                {/* DETAILS */}
+                <td className="p-8">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-3">
+                      <p className="text-slate-900 font-black text-lg uppercase tracking-tighter italic">
+                        {item.name}
+                      </p>
+                      {item.isFeatured && (
+                        <span className="text-[8px] font-black bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full tracking-widest border border-yellow-200">
+                          FEATURED
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">{item.category}</p>
+                  </div>
                 </td>
 
-                <td className="p-6 text-right">
-                  <div className="flex justify-end gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                {/* ACTIONS */}
+                <td className="p-8 text-right">
+                  <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                     <button 
                       onClick={() => navigate('/admin/add-product', { state: { editProduct: item } })}
-                      className="p-3 rounded-xl bg-white/5 text-white hover:bg-emerald-500 transition-all">
-                      <Edit3 size={16} />
+                      className="p-4 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                    >
+                      <Edit3 size={18} />
                     </button>
                     <button 
                       onClick={() => handleDelete(item.id)}
-                      className="p-3 rounded-xl bg-white/5 text-red-400 hover:bg-red-500 hover:text-white transition-all">
-                      <Trash2 size={16} />
+                      className="p-4 rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                    >
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </td>
@@ -104,7 +163,37 @@ const ManageProducts = () => {
             ))}
           </tbody>
         </table>
-        {/* ... (Existing Pagination logic remains the same) ... */}
+
+        {/* EMPTY STATE */}
+        {filteredProducts.length === 0 && (
+          <div className="py-32 text-center">
+            <Package size={64} className="mx-auto text-slate-200 mb-4" />
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em]">No products found in manifest</p>
+          </div>
+        )}
+
+        {/* PAGINATION */}
+        <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
+            Showing <span className="text-slate-900">{indexOfLastItem - itemsPerPage + 1}</span> - <span className="text-slate-900">{Math.min(indexOfLastItem, filteredProducts.length)}</span> of {filteredProducts.length}
+          </p>
+          <div className="flex gap-2">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+              className="p-3 rounded-xl border border-slate-200 text-slate-400 hover:bg-white disabled:opacity-30 transition-all"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              className="p-3 rounded-xl border border-slate-200 text-slate-400 hover:bg-white disabled:opacity-30 transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -68,3 +68,44 @@ html, body, #root {
   background: rgba(16, 185, 129, 0.3);
   border-radius: 10px;
 }
+@media print {
+  /* Hide everything we don't want on the paper */
+  nav, footer, button, .no-print {
+    display: none !important;
+  }
+
+  /* Reset background for ink-saving */
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Force the invoice card to be full width and remove shadows */
+  .max-w-4xl {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .bg-slate-900 {
+    background: #f8fafc !important; /* Light gray for print instead of black */
+    color: black !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+  }
+
+  .text-white, .text-slate-400, .text-emerald-400 {
+    color: black !important;
+  }
+
+  .shadow-sm, .shadow-2xl {
+    box-shadow: none !important;
+  }
+
+  /* Ensure the items breakdown is visible for the receipt */
+  .max-h-0 {
+    max-height: none !important;
+    opacity: 1 !important;
+  }
+}
