@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShoppingBag, Truck, CheckCircle, Clock, XCircle, Trash2, 
   Eye, Package, Search, ChevronRight, Download, Box,
-  BarChart3, Hash, User, Activity
+  BarChart3, Hash, User, Activity, Check
 } from 'lucide-react';
 
 const Orders = () => {
@@ -11,16 +11,9 @@ const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Burnham Palette & UI Constants
-  const colors = {
-    burnham: '#013221',
-    emerald: '#10b981',
-    border: 'rgba(16, 185, 129, 0.1)',
-    card: 'rgba(1, 50, 33, 0.4)'
-  };
-
   const fetchOrders = () => {
     const savedOrders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
+    // Sorting by newest first
     setOrders(savedOrders.reverse());
   };
 
@@ -36,19 +29,21 @@ const Orders = () => {
   }, []);
 
   const updateStatus = (orderId, newStatus) => {
-    const updated = orders.map(order => 
+    const savedOrders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
+    const updated = savedOrders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
     );
     localStorage.setItem('customerOrders', JSON.stringify(updated));
-    setOrders(updated);
+    setOrders([...updated].reverse());
     window.dispatchEvent(new Event('orderUpdate'));
   };
 
   const deleteOrder = (orderId) => {
     if (window.confirm("Archive this record?")) {
-      const updated = orders.filter(order => order.id !== orderId);
+      const savedOrders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
+      const updated = savedOrders.filter(order => order.id !== orderId);
       localStorage.setItem('customerOrders', JSON.stringify(updated));
-      setOrders(updated);
+      setOrders([...updated].reverse());
       window.dispatchEvent(new Event('orderUpdate'));
     }
   };
@@ -63,15 +58,13 @@ const Orders = () => {
     });
   }, [orders, filter, searchTerm]);
 
-  // Styles
-  const cardStyle = "bg-[#013221]/20 backdrop-blur-md border border-emerald-500/10 rounded-3xl p-6 transition-all duration-300 hover:border-emerald-500/30";
   const glassInput = "bg-black/40 border border-emerald-900/50 focus:border-emerald-500 rounded-2xl px-12 py-3 text-sm text-white placeholder:text-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all w-full";
 
   return (
     <div className="min-h-screen bg-[#010c09] text-emerald-50 p-4 md:p-8 font-sans selection:bg-emerald-500 selection:text-black">
       <div className="max-w-[1400px] mx-auto space-y-8">
         
-        {/* TOP NAVIGATION & HUD */}
+        {/* TOP NAVIGATION */}
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 mb-2">
@@ -79,7 +72,7 @@ const Orders = () => {
               <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-emerald-500/60">Logistics Command</span>
             </div>
             <h1 className="text-5xl font-black tracking-tighter text-white">
-              COMMAND <span className="text-emerald-500 italic font-light">center</span>
+              ORDER <span className="text-emerald-500 italic font-light">status</span>
             </h1>
           </div>
 
@@ -108,12 +101,12 @@ const Orders = () => {
           </div>
         </header>
 
-        {/* METRICS GRID */}
+        {/* METRICS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <MetricCard label="Global Throughput" value={filteredOrders.length} icon={<Activity size={20}/>} trend="+12%" />
           <MetricCard 
             label="Gross Revenue" 
-            value={`৳${filteredOrders.reduce((acc, o) => acc + Number(o.total), 0).toLocaleString()}`} 
+            value={`৳${filteredOrders.reduce((acc, o) => acc + Number(o.total || 0), 0).toLocaleString()}`} 
             icon={<BarChart3 size={20}/>} 
             trend="Live" 
           />
@@ -145,7 +138,7 @@ const Orders = () => {
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-emerald-900/30 flex items-center justify-center text-emerald-500">
-                           <User size={14} />
+                            <User size={14} />
                         </div>
                         <div>
                           <p className="font-bold text-white text-sm uppercase">{order.customerName}</p>
@@ -159,9 +152,10 @@ const Orders = () => {
                     <td className="px-8 py-6 text-right font-black text-white italic">৳{order.total}</td>
                     <td className="px-8 py-6">
                       <div className="flex justify-center gap-2">
-                        <ActionButton icon={<Eye size={16}/>} onClick={() => setSelectedOrder(order)} color="emerald" />
-                        <ActionButton icon={<Truck size={16}/>} onClick={() => updateStatus(order.id, 'Shipped')} color="blue" />
-                        <ActionButton icon={<Trash2 size={16}/>} onClick={() => deleteOrder(order.id)} color="rose" />
+                        <ActionButton icon={<Eye size={16}/>} onClick={() => setSelectedOrder(order)} color="emerald" title="View Details" />
+                        <ActionButton icon={<Truck size={16}/>} onClick={() => updateStatus(order.id, 'Shipped')} color="blue" title="Mark Shipped" />
+                        <ActionButton icon={<Check size={16}/>} onClick={() => updateStatus(order.id, 'Delivered')} color="emerald" title="Mark Delivered" />
+                        <ActionButton icon={<Trash2 size={16}/>} onClick={() => deleteOrder(order.id)} color="rose" title="Archive" />
                       </div>
                     </td>
                   </tr>
@@ -202,7 +196,7 @@ const Orders = () => {
                         <Package size={14}/> Inventory Breakdown
                       </label>
                       <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        {selectedOrder.items.map((item, idx) => (
+                        {selectedOrder.items?.map((item, idx) => (
                           <div key={idx} className="flex justify-between items-center bg-black/20 p-4 rounded-2xl border border-emerald-900/20 hover:border-emerald-500/30 transition-colors">
                             <div className="flex items-center gap-4">
                               <img src={item.img} className="w-12 h-12 rounded-xl object-cover grayscale hover:grayscale-0 transition-all" alt="" />
@@ -250,7 +244,7 @@ const MetricCard = ({ label, value, icon, trend }) => (
 
 const StatusBadge = ({ status }) => {
   const styles = {
-    Delivered: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    Delivered: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
     Shipped: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     Pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
   };
@@ -261,14 +255,18 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const ActionButton = ({ icon, onClick, color }) => {
+const ActionButton = ({ icon, onClick, color, title }) => {
   const colors = {
-    emerald: 'bg-emerald-500 hover:bg-white',
-    blue: 'bg-blue-500 hover:bg-white',
-    rose: 'bg-rose-500 hover:bg-white'
+    emerald: 'bg-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]',
+    blue: 'bg-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]',
+    rose: 'bg-rose-500 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]'
   };
   return (
-    <button onClick={onClick} className={`p-3 rounded-xl text-black transition-all hover:-translate-y-1 active:scale-95 ${colors[color]}`}>
+    <button 
+      title={title}
+      onClick={onClick} 
+      className={`p-3 rounded-xl text-black transition-all hover:-translate-y-1 active:scale-95 hover:bg-white ${colors[color]}`}
+    >
       {icon}
     </button>
   );

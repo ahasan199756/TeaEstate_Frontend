@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Upload, Save, X, Link as LinkIcon, Image as ImageIcon, 
-  FileText, Download, AlertCircle, Banknote, Percent, Star 
+  FileText, Download, AlertCircle, Banknote, Percent, Star, Package
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -22,9 +22,10 @@ const AddProduct = () => {
     discountPrice: '',
     discountType: 'flat',
     vat: '5',
+    stock: '', // NEW: Stock property
     description: '',
     img: '',
-    isFeatured: false // NEW: Featured property
+    isFeatured: false
   });
 
   useEffect(() => {
@@ -35,13 +36,14 @@ const AddProduct = () => {
 
   // --- LOGIC: DOWNLOAD TEMPLATE ---
   const downloadTemplate = () => {
-    const headers = "Name,Category,BasePrice,DiscountPrice,DiscountType,VAT,Description,ImageURL,IsFeatured\n";
-    const sampleData = "Premium Matcha,Green Tea,1200,10,percent,5,High quality matcha powder,https://example.com/tea.jpg,true";
+    // Added Stock to the CSV headers
+    const headers = "Name,Category,BasePrice,DiscountPrice,DiscountType,VAT,Stock,Description,ImageURL,IsFeatured\n";
+    const sampleData = "Premium Matcha,Green Tea,1200,10,percent,5,50,High quality matcha powder,https://example.com/tea.jpg,true";
     const blob = new Blob([headers + sampleData], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'estate_import_template.csv';
+    a.download = 'estate_inventory_template.csv';
     a.click();
   };
 
@@ -67,9 +69,10 @@ const AddProduct = () => {
             discountPrice: Number(cols[3]) || 0,
             discountType: cols[4] === 'percent' ? 'percent' : 'flat',
             vat: Number(cols[5]) || 5,
-            description: cols[6] || '',
-            img: cols[7] || '',
-            isFeatured: cols[8]?.toLowerCase() === 'true', // NEW: Parse featured from CSV
+            stock: Number(cols[6]) || 0, // NEW: Stock parsing
+            description: cols[7] || '',
+            img: cols[8] || '',
+            isFeatured: cols[9]?.toLowerCase() === 'true',
             updatedAt: new Date().toISOString()
           };
         });
@@ -85,6 +88,7 @@ const AddProduct = () => {
     reader.readAsText(file);
   };
 
+  // --- CALCULATION LOGIC ---
   const getDiscountValue = () => {
     const base = Number(formData.basePrice) || 0;
     const disc = Number(formData.discountPrice) || 0;
@@ -103,6 +107,7 @@ const AddProduct = () => {
       basePrice: Number(formData.basePrice),
       discountPrice: Number(formData.discountPrice || 0),
       vat: Number(formData.vat),
+      stock: Number(formData.stock || 0), // NEW: Cast to Number
       updatedAt: new Date().toISOString()
     };
 
@@ -124,7 +129,7 @@ const AddProduct = () => {
             {editData ? 'Modify Item' : 'Add product'}
           </h1>
           <div className="flex items-center gap-3 mt-4">
-            <span className="px-3 py-1 bg-emerald-500 text-[9px] font-black text-white uppercase rounded-full"></span>
+            <span className="px-3 py-1 bg-emerald-500 text-[9px] font-black text-white uppercase rounded-full">Active</span>
             <p className="text-white/20 font-bold text-[10px] uppercase tracking-[0.2em]">Database Management System</p>
           </div>
         </div>
@@ -137,13 +142,12 @@ const AddProduct = () => {
 
       {isBulkMode ? (
         <div className="grid grid-cols-1 gap-8 animate-in zoom-in-95 duration-500">
-           {/* ... BULK IMPORT CONTENT (Remains similar, IsFeatured added to logic above) ... */}
            <div className="bg-[#0a0a0a] border-2 border-dashed border-emerald-500/20 rounded-[40px] p-16 flex flex-col items-center text-center group hover:border-emerald-500/50 transition-all">
             <div className="w-24 h-24 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-500 mb-8 group-hover:scale-110 transition-transform shadow-[0_0_50px_rgba(16,185,129,0.1)]">
               <FileText size={48} />
             </div>
             <h2 className="text-2xl font-black text-white uppercase mb-2">CSV Upload</h2>
-            <p className="text-white/40 text-sm max-w-md mb-8">Update global inventory. Use 'true/false' for the IsFeatured column.</p>
+            <p className="text-white/40 text-sm max-w-md mb-8">Update global inventory. Use the 'Stock' column to define available units.</p>
             <div className="flex flex-wrap justify-center gap-4">
               <button onClick={() => bulkFileRef.current.click()} className="px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20">Choose CSV File</button>
               <button onClick={downloadTemplate} className="px-10 py-4 bg-white/5 text-white/60 border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"><Download size={16} /> Get Template</button>
@@ -160,12 +164,12 @@ const AddProduct = () => {
                 <>
                   <img src={formData.img} className="w-full h-full object-cover opacity-80 group-hover:opacity-40 transition-opacity" alt="Preview" />
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-3 transition-all bg-black/40 backdrop-blur-sm">
-                     <button type="button" onClick={() => fileInputRef.current.click()} className="w-32 py-2 bg-white text-black text-[9px] font-black uppercase rounded-full flex items-center justify-center gap-2 hover:scale-105 transition-transform"><ImageIcon size={14}/> Local</button>
-                     <button type="button" onClick={() => {
-                       const url = prompt("Enter Image URL:");
-                       if(url) setFormData({...formData, img: url});
-                     }} className="w-32 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase rounded-full flex items-center justify-center gap-2 hover:scale-105 transition-transform"><LinkIcon size={14}/> URL</button>
-                     <button type="button" onClick={() => setFormData({...formData, img: ''})} className="mt-2 text-red-500 hover:text-red-400 text-[10px] font-bold uppercase tracking-widest">Remove</button>
+                      <button type="button" onClick={() => fileInputRef.current.click()} className="w-32 py-2 bg-white text-black text-[9px] font-black uppercase rounded-full flex items-center justify-center gap-2 hover:scale-105 transition-transform"><ImageIcon size={14}/> Local</button>
+                      <button type="button" onClick={() => {
+                        const url = prompt("Enter Image URL:");
+                        if(url) setFormData({...formData, img: url});
+                      }} className="w-32 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase rounded-full flex items-center justify-center gap-2 hover:scale-105 transition-transform"><LinkIcon size={14}/> URL</button>
+                      <button type="button" onClick={() => setFormData({...formData, img: ''})} className="mt-2 text-red-500 hover:text-red-400 text-[10px] font-bold uppercase tracking-widest">Remove</button>
                   </div>
                 </>
               ) : (
@@ -186,7 +190,7 @@ const AddProduct = () => {
               }} />
             </div>
 
-            {/* NEW: FEATURED STATUS SWITCHER */}
+            {/* FEATURED STATUS SWITCHER */}
             <div 
               onClick={() => setFormData({...formData, isFeatured: !formData.isFeatured})}
               className={`cursor-pointer p-6 rounded-[30px] border transition-all flex items-center justify-between group ${formData.isFeatured ? 'bg-yellow-400/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.1)]' : 'bg-[#0a0a0a] border-white/5 hover:border-white/20'}`}
@@ -205,9 +209,11 @@ const AddProduct = () => {
               </div>
             </div>
 
+            {/* PRICE & STOCK AUDIT */}
             <div className="bg-[#0a0a0a] border border-white/5 rounded-[30px] p-6 shadow-xl">
-              <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] mb-6">Price Audit</h4>
+              <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] mb-6">Inventory Audit</h4>
               <div className="space-y-4 font-medium">
+                <div className="flex justify-between text-xs"><span className="text-white/30 uppercase">In Stock:</span> <span className={`${formData.stock < 10 ? 'text-orange-500' : 'text-white'} font-mono`}>{formData.stock || '0'} Units</span></div>
                 <div className="flex justify-between text-xs"><span className="text-white/30 uppercase">Subtotal:</span> <span className="text-white font-mono">৳{formData.basePrice || '0.00'}</span></div>
                 <div className="flex justify-between text-xs"><span className="text-white/30 uppercase">Savings:</span> <span className="text-red-500 font-mono">-৳{discountAmount.toFixed(2)}</span></div>
                 <div className="pt-4 border-t border-white/5 flex justify-between items-end">
@@ -232,6 +238,13 @@ const AddProduct = () => {
                 </select>
               </div>
               <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-emerald-400 ml-2">Inventory Stock (Units)</label>
+                <div className="relative">
+                   <input type="number" required value={formData.stock} onChange={(e) => setFormData({...formData, stock: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-emerald-500 outline-none pl-12" placeholder="0" />
+                   <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                </div>
+              </div>
+              <div className="col-span-2 space-y-2">
                 <label className="text-[10px] font-black uppercase text-emerald-400 ml-2">Tax Rate (VAT %)</label>
                 <input type="number" value={formData.vat} onChange={(e) => setFormData({...formData, vat: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-emerald-500 outline-none" />
               </div>
