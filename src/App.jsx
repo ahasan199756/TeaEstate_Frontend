@@ -60,49 +60,37 @@ const ShopLayout = () => (
 
 ;
 
+
 const AdminLayout = () => {
   return (
-    /* BACKGROUND STRATEGY: 
-       We use a subtle vertical gradient from Slate-50 (top) to White (bottom).
-       This mimics natural studio lighting, making the dashboard feel expensive.
-    */
-    <div className="flex h-screen w-full bg-gradient-to-b from-[#f2f4f7] to-[#ffffff] text-slate-900 overflow-hidden relative">
-      
-      {/* ARCHITECTURAL ACCENTS:
-         Instead of colorful blurs, we use soft gray "smoke" blurs 
-         to create depth without looking like a gaming app.
-      */}
-      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-slate-200/40 rounded-full blur-[120px] -z-10 pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-slate-100/60 rounded-full blur-[100px] -z-10 pointer-events-none" />
+    /* Deep "British Racing Green" (#020a02) fading to black for premium backdrop */
+    <div className="flex h-screen w-full relative bg-gradient-to-b from-green-900 via-green-950 to-black text-white overflow-hidden  relative">
 
-      {/* SIDEBAR */}
+      {/* Subtle Burnham glows for "subsurface scattering" effect */}
+      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#013221]/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-[#014634]/20 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+      {/* Sidebar using Burnham green */}
       <AdminSidebar />
 
-      {/* MAIN CONTENT AREA */}
+      {/* Main content area */}
       <main className="flex-grow overflow-y-auto custom-scrollbar relative">
-        {/* The Container: 
-            Increased padding for a "Gallery" feel. 
-        */}
         <div className="max-w-[1600px] mx-auto p-8 md:p-12 lg:p-16">
           
-          {/* Global Header Modifier:
-              This ensures any page rendered inside has that sharp 
-              black-to-white contrast.
-          */}
+          {/* Page content */}
           <div className="relative z-10">
             <Outlet />
           </div>
         </div>
 
-        {/* Decorative "Scanline": 
-            A very thin, 1px top border across the main area 
-            adds a subtle "precision" feel.
-        */}
-        <div className="fixed top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent pointer-events-none" />
+        {/* Decorative scanline: subtle Burnham-tinted line for premium vibe */}
+        <div className="fixed top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-[#26a17f]/20 to-transparent pointer-events-none" />
       </main>
     </div>
   );
 };
+
+
 const App = () => {
   return (
     <CartProvider>
