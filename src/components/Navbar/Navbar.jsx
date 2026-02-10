@@ -52,14 +52,14 @@ const Navbar = () => {
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out ${
           // If the user scrolled OR we are on the Success page, show solid green
           (scrolled || isSolidPage) 
-            ? "bg-green-950/95 backdrop-blur-md py-3 shadow-2xl" 
+            ? "bg-[#f4faf4]/95 backdrop-blur-md py-3 shadow-lg border-b border-[#d7e6dc]" 
             : "bg-transparent py-6"
         }`}
       >
         <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
           
-          <Link to="/" className="text-3xl font-extrabold tracking-tighter text-white uppercase">
-            Tea<span className="text-green-400 font-light">Estate</span>
+          <Link to="/" className="text-3xl font-extrabold tracking-tighter text-[#1f3a2f] uppercase" aria-label="TeaEstate home">
+            Tea<span className="text-[#5f9a74] font-light">Estate</span>
           </Link>
 
           <ul className="hidden md:flex items-center gap-10">
@@ -67,7 +67,7 @@ const Navbar = () => {
               <li key={link.name}>
                 <Link 
                   to={link.path} 
-                  className="text-white/90 text-sm font-medium uppercase tracking-widest hover:text-green-400 transition-all duration-300 relative group"
+                  className={`text-sm font-medium uppercase tracking-widest transition-all duration-300 relative group ${location.pathname === link.path ? 'text-[#4f8d67]' : 'text-[#2b4a3a] hover:text-[#4f8d67]'}`}
                 >
                   {link.name}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
@@ -83,7 +83,7 @@ const Navbar = () => {
               onMouseLeave={() => setIsUserMenuOpen(false)}
             >
               <button 
-                className={`text-white hover:text-green-400 transition-colors flex items-center gap-2 pb-2 ${user ? 'text-green-400' : ''}`}
+                className={`text-[#2b4a3a] hover:text-[#4f8d67] transition-colors flex items-center gap-2 pb-2 ${user ? 'text-[#4f8d67]' : ''}`}
               >
                 <IoPersonOutline className="text-2xl" />
                 {user && <span className="text-[10px] font-bold uppercase tracking-tighter hidden lg:block">Hi, {user.name.split(' ')[0]}</span>}
@@ -121,34 +121,34 @@ const Navbar = () => {
               </div>
             </div>
 
-            <button onClick={() => setIsCartOpen(true)} className="text-white hover:text-green-400 transition-colors relative">
+            <button onClick={() => setIsCartOpen(true)} className="text-[#2b4a3a] hover:text-[#4f8d67] transition-colors relative">
               <IoBagOutline className="text-2xl" />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-green-500 text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">
+                <span className="absolute -top-2 -right-2 bg-[#6fa884] text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">
                   {totalItems}
                 </span>
               )}
             </button>
             
-            <Link to="/products" className="hidden md:block bg-green-600 hover:bg-green-500 text-white px-7 py-2.5 rounded-full font-bold text-xs tracking-widest transition-all transform hover:scale-105 shadow-lg">
+            <Link to="/products" className="hidden md:block bg-[#6fa884] hover:bg-[#5f9a74] text-white px-7 py-2.5 rounded-full font-bold text-xs tracking-widest transition-all transform hover:scale-105 shadow-lg">
               SHOP NOW
             </Link>
 
-            <button className="md:hidden text-white" onClick={() => setIsOpen(true)}>
+            <button className="md:hidden text-[#2b4a3a]" onClick={() => setIsOpen(true)}>
               <GiHamburgerMenu className="text-3xl" />
             </button>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        <div className={`fixed inset-0 h-screen w-full bg-green-950 transition-all duration-700 z-[60] flex flex-col items-center justify-center ${
+        <div className={`fixed inset-0 h-screen w-full bg-[#eef6ef] transition-all duration-700 z-[60] flex flex-col items-center justify-center ${
           isOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
         }`}>
-          <button onClick={() => setIsOpen(false)} className="absolute top-8 right-8 text-white"><IoClose className="text-5xl" /></button>
+          <button onClick={() => setIsOpen(false)} className="absolute top-8 right-8 text-[#2b4a3a]"><IoClose className="text-5xl" /></button>
           <ul className="text-center space-y-8">
             {navLinks.map((link) => (
               <li key={link.name}>
-                <Link to={link.path} onClick={() => setIsOpen(false)} className="text-4xl font-black text-white hover:text-green-400 transition-colors uppercase">
+                <Link to={link.path} onClick={() => setIsOpen(false)} className="text-4xl font-black text-[#1f3a2f] hover:text-[#4f8d67] transition-colors uppercase">
                   {link.name}
                 </Link>
               </li>
