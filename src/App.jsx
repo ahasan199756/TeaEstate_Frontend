@@ -4,7 +4,7 @@ import { CartProvider } from './components/Cart/CartContext';
 
 // --- SHOP IMPORTS ---
 import Navbar from './components/Navbar/Navbar';
-import About from './pages/About';  
+import About from './pages/about';  
 import Contact from './pages/Contact';
 import Footer from './components/Footer/footer';
 import Home from './pages/Home';
