@@ -5,7 +5,7 @@ import { CartProvider } from './components/Cart/CartContext';
 // --- SHOP IMPORTS ---
 import Navbar from './components/Navbar/Navbar';
 import About from './pages/about';  
-import Contact from './pages/Contact';
+import Contact from './pages/contact';
 import Footer from './components/Footer/footer';
 import Home from './pages/Home';
 import Products from './pages/products';
