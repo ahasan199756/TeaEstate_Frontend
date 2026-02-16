@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
 import { CartProvider } from './components/Cart/CartContext';
+import { Toaster } from 'react-hot-toast';
 
 // --- SHOP IMPORTS ---
 import Navbar from './components/Navbar/Navbar';
@@ -17,6 +18,7 @@ import OrdersHistory from './components/Cart/OrderHistory';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminLogin from './pages/Admin/AdminLogin';
+import AdminLayout from './components/Admin/AdminLayout';
 
 // --- USER PROFILE SYSTEM ---
 import UserLayout from './pages/User'; // Your Sidebar Layout
@@ -61,39 +63,39 @@ const ShopLayout = () => (
 ;
 
 
-const AdminLayout = () => {
-  return (
-    /* Deep "British Racing Green" (#020a02) fading to black for premium backdrop */
-    <div className="flex h-screen w-full relative bg-gradient-to-b from-green-900 via-green-950 to-black text-white overflow-hidden  relative">
 
-      {/* Subtle Burnham glows for "subsurface scattering" effect */}
-      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#013221]/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-[#014634]/20 rounded-full blur-[100px] -z-10 pointer-events-none" />
-
-      {/* Sidebar using Burnham green */}
-      <AdminSidebar />
-
-      {/* Main content area */}
-      <main className="flex-grow overflow-y-auto custom-scrollbar relative">
-        <div className="max-w-[1600px] mx-auto p-8 md:p-12 lg:p-16">
-          
-          {/* Page content */}
-          <div className="relative z-10">
-            <Outlet />
-          </div>
-        </div>
-
-        {/* Decorative scanline: subtle Burnham-tinted line for premium vibe */}
-        <div className="fixed top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-[#26a17f]/20 to-transparent pointer-events-none" />
-      </main>
-    </div>
-  );
-};
 
 
 const App = () => {
   return (
     <CartProvider>
+      {/* ✅ 2. Add Toaster here so it's accessible everywhere */}
+      <Toaster 
+        position="bottom-right" 
+        reverseOrder={false} 
+        toastOptions={{
+          // Customizing to match your dark emerald/black theme
+          style: {
+            background: '#040d0a',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '16px',
+            fontSize: '14px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981', // Emerald-500
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444', // Red-500
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Router>
         <ScrollToTop />
         <Routes>

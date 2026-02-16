@@ -52,8 +52,8 @@ const Analytics = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.6em] text-emerald-500/60">Live Intelligence Sync</span>
           </div>
           <h1 className="text-7xl md:text-8xl font-black text-white uppercase tracking-[-0.05em] leading-[0.8]">
-            Estate <br />
-            <span className="text-emerald-500 italic">Audit</span>
+           Tea Estate <br />
+            <span className="text-emerald-500 italic">Analytics</span>
           </h1>
         </div>
         
