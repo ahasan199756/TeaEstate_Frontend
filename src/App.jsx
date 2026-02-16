@@ -5,8 +5,8 @@ import { Toaster } from 'react-hot-toast';
 
 // --- SHOP IMPORTS ---
 import Navbar from './components/Navbar/Navbar';
-import About from './pages/About';  
-import Contact from './pages/Contact';
+import About from './pages/about';  
+import Contact from './pages/contact';
 import Footer from './components/Footer/footer';
 import Home from './pages/Home';
 import Products from './pages/products';
