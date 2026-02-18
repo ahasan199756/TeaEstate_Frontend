@@ -5,39 +5,40 @@ import {
   IoRemove,
   IoBagHandleOutline,
 } from "react-icons/io5";
-import { useCart } from "./CartContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast"; // ✅ 1. Import toast
+import { toast } from "react-hot-toast";
+import { useCart } from "./useCart";
 
 const CartDrawer = ({ isOpen, onClose }) => {
-  const {
-    cart,
-    removeFromCart,
-    increaseQuantity,
-    decreaseQuantity,
-    subtotal,
-  } = useCart();
+  const { cart, removeFromCart, increaseQuantity, decreaseQuantity, subtotal } =
+    useCart();
 
   const navigate = useNavigate();
 
-  const config =
-    JSON.parse(localStorage.getItem("siteConfig")) || {
-      currency: "৳",
-    };
-
-  // ✅ 2. Notification Handlers
-  const handleRemove = (id, name) => {
-    removeFromCart(id);
-    toast.error(`${name} removed from bag`);
+  const config = JSON.parse(localStorage.getItem("siteConfig")) || {
+    currency: "৳",
   };
 
-  const handleQtyChange = (id, type) => {
-    if (type === 'inc') {
-      increaseQuantity(id);
-      toast.success("Quantity increased", { duration: 1000 });
+  const handleRemove = (item) => {
+    removeFromCart(item.id, item.selectedSize);
+    toast.error(`${item.name} removed from bag`);
+  };
+
+  const handleQtyChange = (item, type) => {
+    const size = item.selectedSize || "default";
+    const stockCap = Number(item.stockAtAdd ?? Infinity);
+
+    if (type === "inc") {
+      // Optional: prevent going over stock cap
+      if (item.quantity >= stockCap) {
+        toast.error("No more stock for this size", { duration: 1200 });
+        return;
+      }
+      increaseQuantity(item.id, size);
+      toast.success("Quantity increased", { duration: 900 });
     } else {
-      decreaseQuantity(id);
-      toast.success("Quantity decreased", { duration: 1000 });
+      decreaseQuantity(item.id, size);
+      toast.success("Quantity decreased", { duration: 900 });
     }
   };
 
@@ -63,13 +64,16 @@ const CartDrawer = ({ isOpen, onClose }) => {
         }`}
       >
         <div className="flex flex-col h-full p-10">
-
           {/* Header */}
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-4xl font-black uppercase tracking-tighter italic">
               Your <span className="text-emerald-500">Bag</span>
             </h2>
-            <button onClick={onClose} className="hover:rotate-90 transition-transform duration-300">
+
+            <button
+              onClick={onClose}
+              className="hover:rotate-90 transition-transform duration-300"
+            >
               <IoClose size={24} />
             </button>
           </div>
@@ -82,58 +86,86 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 <p className="mt-4">Cart is empty</p>
               </div>
             ) : (
-              cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-6 bg-white/[0.03] p-5 rounded-[32px] border border-white/5"
-                >
-                  <img
-                    src={item.img}
-                    alt={item.name}
-                    className="w-24 h-24 rounded-2xl object-cover"
-                  />
+              cart.map((item) => {
+                const size = item.selectedSize || "default";
+                const stockCap = Number(item.stockAtAdd ?? Infinity);
+                const disableInc = item.quantity >= stockCap;
+                const disableDec = item.quantity <= 1;
 
-                  <div className="flex-1">
-                    <h4 className="text-xs font-bold uppercase tracking-wider">
-                      {item.name}
-                    </h4>
-
-                    <p className="text-emerald-500 mt-1 font-mono">
-                      {config.currency}
-                      {Number(item.price).toLocaleString()}
-                    </p>
-
-                    {/* Quantity Controls */}
-                    <div className="flex items-center mt-4 bg-black/20 w-fit rounded-full border border-white/5">
-                      <button
-                        onClick={() => handleQtyChange(item.id, 'dec')}
-                        className="px-3 py-1 hover:text-emerald-500 transition-colors"
-                      >
-                        <IoRemove />
-                      </button>
-
-                      <span className="px-2 text-sm font-bold min-w-[24px] text-center">
-                        {item.quantity}
-                      </span>
-
-                      <button
-                        onClick={() => handleQtyChange(item.id, 'inc')}
-                        className="px-3 py-1 hover:text-emerald-500 transition-colors"
-                      >
-                        <IoAdd />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Remove Button with requested Pop Effect */}
-                  <button
-                      onClick={() => handleRemove(item.id, item.name)}
-                      className="text-gray-500 transition-all duration-200 hover:text-red-500 hover:scale-125 active:scale-90 self-start mt-2"
+                return (
+                  <div
+                    key={`${item.id}__${size}`} // ✅ key includes size
+                    className="flex gap-6 bg-white/[0.03] p-5 rounded-[32px] border border-white/5"
                   >
+                    <img
+                      src={item.img}
+                      alt={item.name}
+                      className="w-24 h-24 rounded-2xl object-cover"
+                    />
+
+                    <div className="flex-1">
+                      <h4 className="text-xs font-bold uppercase tracking-wider">
+                        {item.name}
+                      </h4>
+
+                      {/* ✅ Show size */}
+                      <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35 mt-1">
+                        Size: {size}
+                      </p>
+
+                      <p className="text-emerald-500 mt-2 font-mono">
+                        {config.currency}
+                        {Number(item.price || 0).toLocaleString()}
+                      </p>
+
+                      {/* Quantity Controls */}
+                      <div className="flex items-center mt-4 bg-black/20 w-fit rounded-full border border-white/5">
+                        <button
+                          onClick={() => handleQtyChange(item, "dec")}
+                          disabled={disableDec}
+                          className="px-3 py-1 hover:text-emerald-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <IoRemove />
+                        </button>
+
+                        <span className="px-2 text-sm font-bold min-w-[24px] text-center">
+                          {item.quantity}
+                        </span>
+
+                        <button
+                          onClick={() => handleQtyChange(item, "inc")}
+                          disabled={disableInc}
+                          className="px-3 py-1 hover:text-emerald-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title={
+                            stockCap !== Infinity && disableInc
+                              ? "Reached stock limit"
+                              : ""
+                          }
+                        >
+                          <IoAdd />
+                        </button>
+                      </div>
+
+                      {/* ✅ Optional little stock hint */}
+                      {stockCap !== Infinity &&
+                        stockCap > 0 &&
+                        stockCap <= 3 && (
+                          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.25em] text-emerald-300/80">
+                            Only {stockCap} left for {size}
+                          </p>
+                        )}
+                    </div>
+
+                    {/* Remove */}
+                    <button
+                      onClick={() => handleRemove(item)}
+                      className="text-gray-500 transition-all duration-200 hover:text-red-500 hover:scale-125 active:scale-90 self-start mt-2"
+                    >
                       <IoTrashOutline size={20} />
-                  </button>
-                </div>
-              ))
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
 
@@ -144,7 +176,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 <span className="text-white/50">Subtotal</span>
                 <span>
                   {config.currency}
-                  {subtotal.toLocaleString()}
+                  {Number(subtotal).toLocaleString()}
                 </span>
               </div>
 
